@@ -56,6 +56,14 @@ namespace Estatistica.DataAccessLayer.Repositories
                                               .ToListAsync();
         }
 
+        public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTracking(Expression<Func<ConcorrenteProduto, bool>> expression)
+        {
+            return await context.ConcorrenteProdutos.AsNoTracking().Where(expression)
+                                              .OrderBy(x => x.Concorrente.Id)
+                                              .ThenBy(x => x.CodigoProdutoConcorrente)
+                                              .ToListAsync();
+        }
+
         public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(string produtoId)
         {
             return await context.ConcorrenteProdutos

@@ -51,5 +51,10 @@ namespace Estatistica.DataAccessLayer.Repositories
             return await context.Concorrentes
                 .FirstOrDefaultAsync(x => x.Id == id);                
         }
+
+        public async Task<IEnumerable<Concorrente>> GetConcorrentesByConditionNoTracking(Expression<Func<Concorrente, bool>> expression)
+        {
+            return await context.Concorrentes.AsNoTracking().Where(expression).OrderBy(x => x.Id).ToListAsync();
+        }
     }
 }

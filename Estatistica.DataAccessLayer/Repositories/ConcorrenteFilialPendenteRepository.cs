@@ -37,7 +37,11 @@ namespace Estatistica.DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
-        
+        public async Task<IEnumerable<ConcorrenteFilialPendente>> GetConcorrenteFilialPendentesNoTracking(Expression<Func<ConcorrenteFilialPendente, bool>> expression)
+        {
+            return await context.ConcorrenteFilialPendentes.AsNoTracking().Include(x => x.Planilha).Include(x => x.Concorrente).Where(expression)
+                .ToListAsync();
+        }
 
         public async Task UpdateConcorrenteFilialPendente(string cnpj, Concorrente concorrente)
         {

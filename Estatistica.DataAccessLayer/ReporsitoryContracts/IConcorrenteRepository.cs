@@ -8,6 +8,7 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
         Task<Concorrente> AddConcorrente(Concorrente concorrente);
         Task<IEnumerable<Concorrente>> GetConcorrentes();
         Task<IEnumerable<Concorrente>> GetConcorrentesByCondition(Expression<Func<Concorrente, bool>> expression);
+        Task<IEnumerable<Concorrente>> GetConcorrentesByConditionNoTracking(Expression<Func<Concorrente, bool>> expression);
         Task<bool> UpdateConcorrenteNome(Concorrente concorrente);
         Task<Concorrente?> GetConcorrenteById(int id);
     }

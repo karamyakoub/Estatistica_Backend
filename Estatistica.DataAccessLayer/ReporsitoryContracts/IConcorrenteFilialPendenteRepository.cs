@@ -9,6 +9,7 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
         Task AddConcorrenteFilialPendenteRange(List<ConcorrenteFilialPendente> concorrenteFilialPendenteList);
         Task UpdateConcorrenteFilialPendente(string cnpj,Concorrente concorrente);
         Task<IEnumerable<ConcorrenteFilialPendente>> GetConcorrenteFilialPendentes(Expression<Func<ConcorrenteFilialPendente, bool>> expression);
+        Task<IEnumerable<ConcorrenteFilialPendente>> GetConcorrenteFilialPendentesNoTracking(Expression<Func<ConcorrenteFilialPendente, bool>> expression);
 
     }
 }

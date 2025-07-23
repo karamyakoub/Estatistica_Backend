@@ -65,5 +65,12 @@ namespace Estatistica.DataAccessLayer.Repositories
             return await context.ConcorrenteFilials
                 .FirstOrDefaultAsync(cf => cf.Cnpj == cnpj);
         }
+
+        public async Task<IEnumerable<ConcorrenteFilial>> GetConcorrentesFiliaisNoTracking(Expression<Func<ConcorrenteFilial, bool>> expression)
+        {
+            return await context.ConcorrenteFilials
+                .AsNoTracking()
+                .Where(expression).ToListAsync();
+        }
     }
 }

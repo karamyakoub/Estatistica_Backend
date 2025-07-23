@@ -38,9 +38,14 @@ namespace Estatistica.DataAccessLayer.Repositories
             return await context.ConcorrenteFilialTemps.Where(expression).ToListAsync();
         }
 
+        public async Task<IEnumerable<ConcorrenteFilialTemp>> GetConcorrenteFilialTempByConditionNoTracking(Expression<Func<ConcorrenteFilialTemp, bool>> expression)
+        {
+            return await context.ConcorrenteFilialTemps.AsNoTracking().Where(expression).ToListAsync();
+        }
+
         public async Task<IEnumerable<ConcorrenteFilialTemp>> GetConcorrenteFilialTempByPlanilhaId(int planilhaId)
         {
-            return await context.ConcorrenteFilialTemps.AsNoTracking().Where(x => x.Planilha != null && x.Planilha.Id == planilhaId).ToListAsync();
+            return await context.ConcorrenteFilialTemps.Where(x => x.Planilha != null && x.Planilha.Id == planilhaId).ToListAsync();
         }
 
         public async Task UpdateConcorrenteFilialTempRange(int planilhaId, List<ConcorrenteFilialTemp> concorrenteFilialTemps)

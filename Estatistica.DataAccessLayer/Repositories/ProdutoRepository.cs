@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,6 +44,16 @@ namespace Estatistica.DataAccessLayer.Repositories
         public async Task<Produto?> GetProductByCodigoBarra(string codigoBarra)
         {
             return await context.Produtos.FirstOrDefaultAsync(x => x.CodigoBarra == codigoBarra);
+        }
+
+        public async Task<IEnumerable<Produto>> GetProdutosByCondition(Expression<Func<Produto, bool>> condition)
+        {
+            return await context.Produtos.Where(condition).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Produto>> GetProdutosByConditionNoTracking(Expression<Func<Produto, bool>> condition)
+        {
+            return await context.Produtos.AsNoTracking().Where(condition).ToListAsync();
         }
 
         public async Task<Produto> UpdateProduto(Produto produto)

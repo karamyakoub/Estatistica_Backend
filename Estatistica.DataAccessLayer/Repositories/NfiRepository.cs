@@ -33,5 +33,11 @@ namespace Estatistica.DataAccessLayer.Repositories
             return await context.Nfis.Include(x => x.Nfc).Where(condition)                                
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Nfi>> GetNfisByConditionNoTracking(Expression<Func<Nfi, bool>> condition)
+        {
+            return await context.Nfis.Include(x => x.Nfc).AsNoTracking().Where(condition)
+                .ToListAsync();
+        }
     }
 }

@@ -12,6 +12,7 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
     {
         Task<IEnumerable<ConcorrenteFilialTemp>> GetConcorrenteFilialTempByPlanilhaId(int planilhaId);
         Task<IEnumerable<ConcorrenteFilialTemp>> GetConcorrenteFilialTempByCondition(Expression<Func<ConcorrenteFilialTemp, bool>> expression);
+        Task<IEnumerable<ConcorrenteFilialTemp>> GetConcorrenteFilialTempByConditionNoTracking(Expression<Func<ConcorrenteFilialTemp, bool>> expression);
         Task<bool> AddCocorrenteFilialTempRange(List<ConcorrenteFilialTemp> concorrenteFilialTemps);
         Task DeleteConcorrenteFilialTempRange(List<ConcorrenteFilialTemp> concorrenteFilialTemps);
         Task UpdateConcorrenteFilialTempRange(int planilhaId, List<ConcorrenteFilialTemp> concorrenteFilialTemps);

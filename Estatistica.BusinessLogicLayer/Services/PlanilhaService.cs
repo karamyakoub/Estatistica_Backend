@@ -92,7 +92,7 @@ namespace Estatistica.BusinessLogicLayer.Services
 
         public async Task<IEnumerable<ConcorrenteFilialTempGetResponse>> GetConcorrenteFilialTempByPlanilhaId(int planilhaId)
         {
-            return mapper.Map<IEnumerable<ConcorrenteFilialTempGetResponse>>(await concorrenteFilialTempRepository.GetConcorrenteFilialTempByPlanilhaId(planilhaId));
+            return mapper.Map<IEnumerable<ConcorrenteFilialTempGetResponse>>(await concorrenteFilialTempRepository.GetConcorrenteFilialTempByConditionNoTracking(x => x.Planilha != null && x.Planilha.Id == planilhaId));
         }
 
         public async Task<PageObject<PlanilhaGetResponse>> GetPlanilhas(int pageSize, int pageCount, OrderByEnum orderBy)
@@ -280,11 +280,11 @@ namespace Estatistica.BusinessLogicLayer.Services
             if (planilhaLista is null)
                 return 0;
 
-            var nfcLista = await nfcRespository.GetNfcsByCondition(x => x.Planilha!.Id == planilha.Id);
+            var nfcLista = await nfcRespository.GetNfcsByConditionNoTracking(x => x.Planilha!.Id == planilha.Id);
 
-            var concorrenteFiliais = await concorrenteFilialRepository.GetConcorrentesFiliais();
+            var concorrenteFiliais = await concorrenteFilialRepository.GetConcorrentesFiliaisNoTracking(x => x.Cnpj != null);
             var concorrenteProdutos = await concorrenteProdutoRepository
-                .GetConcorrenteProdutosByCondition(x => x.Concorrente != null);
+                .GetConcorrenteProdutosByConditionNoTracking(x => x.Concorrente != null);
 
             var itemsJoin = (from p in planilhaLista!
                             join n in nfcLista on p.ChaveNfe equals n.ChaveNfe into gj
@@ -307,11 +307,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                                 Valor = p.ValorUnitario
                             }).ToList();
 
-            var t = itemsJoin.Where(x => x.Nfc == null);
-            if(t.Count() > 0)
-            {
-                var x = 1;
-            }
+            
             var existedItems = await nfiRespository.GetNfisByCondition(x => itemsJoin.Select(x => x.Id).Contains(x.Id));
 
 

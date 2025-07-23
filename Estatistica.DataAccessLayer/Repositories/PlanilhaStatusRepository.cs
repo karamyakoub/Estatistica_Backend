@@ -32,5 +32,14 @@ namespace Estatistica.DataAccessLayer.Repositories
                 .OrderBy(x => x.DataInclusao)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<PlanilhaStatus>> GetPlanilhaStatusByPlanilhaIdNoTracking(int id)
+        {
+            return await context.PlanilhaStatuses
+                .AsNoTracking()
+                .Where(x => x.Planhila.Id == id)
+                .OrderBy(x => x.DataInclusao)
+                .ToListAsync();
+        }
     }
 }
