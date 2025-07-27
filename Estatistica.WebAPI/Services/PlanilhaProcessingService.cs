@@ -3,6 +3,8 @@ using Estatistica.BusinessLogicLayer.Enums;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.DataAccessLayer.Context;
 using Estatistica.DataAccessLayer.Entities;
+using Estatistica.DataAccessLayer.ReporsitoryContracts;
+using Estatistica.DataAccessLayer.Repositories;
 using ExcelDataReader;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -41,29 +43,37 @@ namespace Estatistica.WebAPI.Services
 
                 foreach (var planilha in planilhas)
                 {
-
-                    switch (planilha.Status)
+                    try
                     {
-                        //Just added
-                        case (int)PlanilhaStatusEnum.AguardandoInclusao:
-                            if (!string.IsNullOrWhiteSpace(planilha.Caminho))
-                                await readPlanilha(planilha);
-                            break;
-                        //Ready to process
-                        case (int)PlanilhaStatusEnum.AguardandoProcessamento:
-                            var hasPendentes = await checkFiliaisPendentes(planilha);
-                            if (hasPendentes.HasValue && !hasPendentes.Value)
-                            {
-                                //Process the planilha
-                                await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
-                                await includePlanilhaProducts(planilha);
-                                await includePlanilhaHeader(planilha);
-                                await includePlanilhaItems(planilha);
-                                await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
-                            }
-                            break;
+                        switch (planilha.Status)
+                        {
+                            //Just added
+                            case (int)PlanilhaStatusEnum.AguardandoInclusao:
+                                if (!string.IsNullOrWhiteSpace(planilha.Caminho))
+                                    await readPlanilha(planilha);
+                                break;
+                            //Ready to process
+                            case (int)PlanilhaStatusEnum.AguardandoProcessamento:
+                                var hasPendentes = await checkFiliaisPendentes(planilha);
+                                if (hasPendentes.HasValue && !hasPendentes.Value)
+                                {
+                                    //Process the planilha
+                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
+                                    //Include just items in concorrentefilialTemp
+                                    await filterPlanilha(planilha);
+                                    await includePlanilhaProducts(planilha);
+                                    await includePlanilhaHeader(planilha);
+                                    await includePlanilhaItems(planilha);
+                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
+                                }
+                                break;
+                        }
+                        context.Entry(planilha).State = EntityState.Detached;
                     }
-                    context.Entry(planilha).State = EntityState.Detached;
+                    catch (Exception ex)
+                    {
+                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
+                    }
                 }
                 await Task.Delay(10000);
             }
@@ -96,6 +106,12 @@ namespace Estatistica.WebAPI.Services
                 await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Incluida, "Incluida, aguardando o usuario escolher as empresas que deseja processar");
         }
 
+        private async Task filterPlanilha(Planilha planilha)
+        {
+            var concorrenteFiliaisTempoIncluidos = (await planilhaService.GetConcorrenteFilialTempByPlanilhaId(planilha.Id))?.Where(x => x.Incluido.HasValue && x.Incluido.Value);
+            planilhaLista = planilhaLista?.Where(x => concorrenteFiliaisTempoIncluidos?.Any(y => y.Cnpj == x.Cnpj) ?? false).ToList();
+        }
+
         private async Task<bool?> checkFiliaisPendentes(Planilha planilha)
         {
             var planilhaDataTable = readExcelFileToDataTable(planilha.Caminho!);
@@ -116,7 +132,7 @@ namespace Estatistica.WebAPI.Services
             var filiaisPendentes = filiaisTemp.Select(x => x.Cnpj).ToList().Except(filiasConcorrentes.Select(x => x.Cnpj));
 
             //No need to filiais temp any more
-            await planilhaService.DeleteConcorrenteFilialTempRange(planilha.Id);
+            //await planilhaService.DeleteConcorrenteFilialTempRange(planilha.Id);
             if (filiaisPendentes.Any())
             {
                 var filailPendentesWithName = filiaisTemp.Where(x => filiaisPendentes.Contains(x.Cnpj));
@@ -269,10 +285,10 @@ namespace Estatistica.WebAPI.Services
 
         private async Task includePlanilhaItems(Planilha planilha)
         {
-            try
+            try            
             {
-                await planilhaService.IncludePlanilhaItems(planilha, planilhaLista);
-                await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ItensIncluidos, "NFI incluidos com sucesso");
+                var cnt = await planilhaService.IncludePlanilhaItems(planilha, planilhaLista);
+                await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ItensIncluidos, $"NFI incluidos com sucesso, {cnt} itens");
             }
             catch (Exception ex)
             {

@@ -11,6 +11,7 @@ namespace Estatistica.DataAccessLayer.Repositories
         Task<ConcorrenteProduto?> GetConcorrenteProdutosByConcorrenteAndCodigo(int concorrenteId, string codigoProdutoConcorrente);
         Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByCondition(Expression<Func<ConcorrenteProduto, bool>> expression);
         Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTracking(Expression<Func<ConcorrenteProduto, bool>> expression);
+        Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingWithoutConcorrente(Expression<Func<ConcorrenteProduto, bool>> expression);
         Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(string produtoId);
         Task<bool> LinkConcorrenteProduto(string produtoId, Produto produto);
         Task<bool> LinkConcorrenteProdutoByConcorrenteAndCodigo(int concorrenteId, string codigoProdutoConcorrente, Produto produto);

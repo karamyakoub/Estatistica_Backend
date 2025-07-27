@@ -69,6 +69,7 @@ namespace Estatistica.DataAccessLayer.Repositories
         public async Task<IEnumerable<ConcorrenteFilial>> GetConcorrentesFiliaisNoTracking(Expression<Func<ConcorrenteFilial, bool>> expression)
         {
             return await context.ConcorrenteFilials
+                .Include(x => x.Concorrente)
                 .AsNoTracking()
                 .Where(expression).ToListAsync();
         }

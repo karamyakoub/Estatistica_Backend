@@ -99,5 +99,13 @@ namespace Estatistica.BusinessLogicLayer.Services
         {
             await concorrenteFilialPendenteRepository.UpdateConcorrenteFilialPendente(cnpj, concorrente);
         }
+
+        public async Task UpdateConcorrenteFilialPendente(string cnpj, int idConcorrente)
+        {
+            var concorrente = await concorrenteRepository.GetConcorrenteById(idConcorrente);
+            if (concorrente is null)
+                throw new ArgumentNullException("Concorrente nao encontrado");
+            await concorrenteFilialPendenteRepository.UpdateConcorrenteFilialPendente(cnpj, concorrente);
+        }
     }
 }

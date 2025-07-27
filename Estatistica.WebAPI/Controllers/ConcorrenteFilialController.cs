@@ -62,9 +62,10 @@ namespace Estatistica.WebAPI.Controllers
         [HttpPut("pendente")]
         public async Task<IActionResult> UpdateConcorrenteFilialPendente([FromBody] ConcorrenteFilailPendenteUpdateRequest dto)
         {
-            var concorrenteFilial = await concorrenteFilialService.UpdateConcorrenteFilial(dto.Cnpj, dto.IdConcorrente);
+            await concorrenteFilialService.UpdateConcorrenteFilialPendente(dto.Cnpj, dto.IdConcorrente);
+            var concorrenteFilial = await concorrenteFilialService.AddConcorrenteFilial(dto.Cnpj, dto.IdConcorrente);
             if (concorrenteFilial is null)
-                return NotFound();
+                return BadRequest("Não foi possivo criar o vinculo");
             await planilhaService.CheckAndUpdatePlanilhaStatus();
             return Ok(concorrenteFilial);
         }

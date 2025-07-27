@@ -34,6 +34,7 @@ namespace Estatistica.DataAccessLayer.Context
             builder.Entity<PlanilhaStatus>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             builder.Entity<ConcorrenteFilialTemp>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             builder.Entity<ConcorrenteFilialPendente>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
+            builder.Entity<Nfi>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
 
             builder.Entity<IdentityRole>().HasData(
                     new IdentityRole

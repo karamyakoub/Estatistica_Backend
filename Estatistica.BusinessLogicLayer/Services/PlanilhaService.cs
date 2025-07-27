@@ -4,9 +4,11 @@ using Estatistica.BusinessLogicLayer.DTO;
 using Estatistica.BusinessLogicLayer.Enums;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.BusinessLogicLayer.Utils;
+using Estatistica.DataAccessLayer.Context;
 using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Headers;
 
 namespace Estatistica.BusinessLogicLayer.Services
@@ -25,6 +27,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         private readonly IProdutoRepository produtoRepository;
         private readonly IUsuarioRepository usuarioRepository;
         private readonly IMapper mapper;
+        private readonly ApplicationDbContext dbContext;
 
         public PlanilhaService(IPlanilhaRepository planilhaRepository,
             IPlanilhaStatusRepository planilhaStatusRepository,
@@ -37,7 +40,8 @@ namespace Estatistica.BusinessLogicLayer.Services
             INfiRespository nfiRespository,
             IProdutoRepository produtoRepository,
             IUsuarioRepository usuarioRepository,
-            IMapper mapper)
+            IMapper mapper,
+            ApplicationDbContext dbContext)
         {
             this.planilhaRepository = planilhaRepository;
             this.planilhaStatusRepository=planilhaStatusRepository;
@@ -51,6 +55,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             this.produtoRepository=produtoRepository;
             this.usuarioRepository=usuarioRepository;
             this.mapper = mapper;
+            this.dbContext=dbContext;
         }
 
         public async Task<bool> AddCocorrenteFilialTempRange(List<ConcorrenteFilialTemp> concorrenteFilialTemps)
@@ -85,7 +90,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
 
         public async Task DeleteConcorrenteFilialTempRange(int planilhaId)
-        {            
+        {
             var concorrenteFilialTempsToDelete = (await concorrenteFilialTempRepository.GetConcorrenteFilialTempByCondition(x => x.Planilha != null && x.Planilha.Id == planilhaId)).ToList();
             await concorrenteFilialTempRepository.DeleteConcorrenteFilialTempRange(concorrenteFilialTempsToDelete);
         }
@@ -103,7 +108,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                 .Skip(pageSize * (pageCount - 1))
                 .Take(pageSize)
                 .ToList();
-            else if(orderBy == OrderByEnum.Description)
+            else if (orderBy == OrderByEnum.Description)
                 planilhas = planilhas.OrderBy(x => x.NomePlanilha)
                 .Skip(pageSize * (pageCount - 1))
                 .Take(pageSize)
@@ -115,10 +120,10 @@ namespace Estatistica.BusinessLogicLayer.Services
                 .ToList();
 
             foreach (var planilha in planilhas)
-                {
-                    var usuario = await usuarioRepository.GetUsuarioById(planilha.UsuarioCadastro);
-                    planilha.UsuarioCadastro = usuario?.Email ?? "Desconhecido";
-                }
+            {
+                var usuario = await usuarioRepository.GetUsuarioById(planilha.UsuarioCadastro);
+                planilha.UsuarioCadastro = usuario?.Email ?? "Desconhecido";
+            }
 
             return new PageObject<PlanilhaGetResponse>(mapper.Map<List<PlanilhaGetResponse>>(planilhas), pageSize, pageCount, planilhas.Count());
         }
@@ -137,7 +142,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         public async Task<IEnumerable<PlanilhaStatusGetResponse>> GetPlanilhaStatus(int id)
         {
             var planilhasResponse = mapper.Map<IEnumerable<PlanilhaStatusGetResponse>>(await planilhaStatusRepository.GetPlanilhaStatusByPlanilhaId(id));
-            foreach(var planilha in planilhasResponse)
+            foreach (var planilha in planilhasResponse)
             {
                 planilha.Situacao = EnumUtil.GetPlanilhaStatusDescription(Int16.Parse(planilha.Situacao ?? "0"));
             }
@@ -210,7 +215,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                         NomeCliente = p.NomeCliente,
                         Planilha = planilha,
                         DataCadastro = DateTime.Now,
-                         UsuarioCadastro = planilha.UsuarioCadastro
+                        UsuarioCadastro = planilha.UsuarioCadastro
                     }
                 ).ToList();
 
@@ -228,10 +233,11 @@ namespace Estatistica.BusinessLogicLayer.Services
 
         public async Task<int> IncludePlanilhaProducts(Planilha planilha, IEnumerable<PlanilhaExcelModel>? planilhaLista)
         {
-            if(planilhaLista is null)
+            if (planilhaLista is null)
                 return 0;
             var concorrentesFilial = await concorrenteFilialRepository.GetConcorrentesFiliais();
             var concorrentes = await concorrenteRepository.GetConcorrentes();
+
             var planilhaListaWithCodigoConcorrente = from p in planilhaLista
                                                      join cf in concorrentesFilial on p.Cnpj equals cf.Cnpj into gj
                                                      from cfJoined in gj.DefaultIfEmpty()
@@ -260,7 +266,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             var existedProducts = await concorrenteProdutoRepository.GetConcorrenteProdutosByCondition(x => products.Select(p => p.Id).Contains(x.Id));
 
             var productsToInclude = products.Where(x => !existedProducts.Select(x => x.Id).Contains(x.Id)).ToList();
-            foreach(var product in productsToInclude)
+            foreach (var product in productsToInclude)
             {
                 if (!string.IsNullOrEmpty(product.CodigoBarraConcorrente))
                 {
@@ -280,39 +286,50 @@ namespace Estatistica.BusinessLogicLayer.Services
             if (planilhaLista is null)
                 return 0;
 
-            var nfcLista = await nfcRespository.GetNfcsByConditionNoTracking(x => x.Planilha!.Id == planilha.Id);
+            var nfcLista = await nfcRespository.GetNfcsByCondition(x => x.Planilha!.Id == planilha.Id);
 
-            var concorrenteFiliais = await concorrenteFilialRepository.GetConcorrentesFiliaisNoTracking(x => x.Cnpj != null);
+            var concorrenteFiliais = await concorrenteFilialRepository.GetConcorrentesFiliais(x => x.Cnpj != null);
+
             var concorrenteProdutos = await concorrenteProdutoRepository
-                .GetConcorrenteProdutosByConditionNoTracking(x => x.Concorrente != null);
+                .GetConcorrenteProdutosByCondition(x => x.Concorrente != null);
+
 
             var itemsJoin = (from p in planilhaLista!
-                            join n in nfcLista on p.ChaveNfe equals n.ChaveNfe into gj
-                            from nJoined in gj.DefaultIfEmpty()
-                            join cf in concorrenteFiliais on p.Cnpj equals cf.Cnpj into gj2
-                            from cfJoined in gj2.DefaultIfEmpty()
-                            join prod in concorrenteProdutos on new {ConcorrenteId = cfJoined.Concorrente.Id,Prod = p.CodigoProduto } equals new { ConcorrenteId = prod.Concorrente.Id, Prod = prod.CodigoProdutoConcorrente } into gj3
-                            from pJoined in gj3.DefaultIfEmpty()
-                            select new Nfi
-                            {
-                                Nfc = nJoined,
-                                CodigoBarra = p.CodigoBarra,
-                                DataCadastro = DateTime.Now,
-                                Qtde = p.Qtd,
-                                UfDestino = p.UfDestino,
-                                UfOrigin = p.UfOrigin,
-                                Unidade = p.Unidade,
-                                UsuarioCadastro = planilha.UsuarioCadastro,
-                                ConcorrenteProduto = pJoined,
-                                Valor = p.ValorUnitario
-                            }).ToList();
+                             join n in nfcLista on p.ChaveNfe equals n.ChaveNfe into gj
+                             from nJoined in gj.DefaultIfEmpty()
+                             join cf in concorrenteFiliais on p.Cnpj equals cf.Cnpj into gj2
+                             from cfJoined in gj2.DefaultIfEmpty()
+                             join prod in concorrenteProdutos on new { ConcorrenteId = cfJoined.Concorrente.Id, Prod = p.CodigoProduto } equals new { ConcorrenteId = prod.Concorrente.Id, Prod = prod.CodigoProdutoConcorrente } into gj3
+                             from pJoined in gj3.DefaultIfEmpty()
+                             select new Nfi
+                             {
+                                 Nfc = nJoined,
+                                 CodigoBarra = p.CodigoBarra,
+                                 DataCadastro = DateTime.Now,
+                                 Qtde = p.Qtd,
+                                 UfDestino = p.UfDestino,
+                                 UfOrigin = p.UfOrigin,
+                                 Unidade = p.Unidade,
+                                 UsuarioCadastro = planilha.UsuarioCadastro,
+                                 ConcorrenteProduto = pJoined,
+                                 Valor = p.ValorUnitario
+                             }).ToList();
 
-            
-            var existedItems = await nfiRespository.GetNfisByCondition(x => itemsJoin.Select(x => x.Id).Contains(x.Id));
-
-
+            var existedItems = await nfiRespository.GetNfisByConditionNoTracking(x => itemsJoin.Select(x => x.Id).Contains(x.Id));
             var itemsToAdd = itemsJoin.Where(x => !existedItems.Select(x => x.Id).Contains(x.Id)).ToList();
-            await nfiRespository.AddNfiRange(itemsToAdd);
+
+
+            var usuCadastro = nfcLista.FirstOrDefault()?.UsuarioCadastro ?? string.Empty;
+            foreach(var item in itemsToAdd)
+            {
+                await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)",                    
+                    item.ConcorrenteProduto.Id, item.Nfc.ChaveNfe, item.Qtde, item.Valor,
+                    item.UfOrigin ?? string.Empty, item.UfDestino ?? string.Empty,
+                    item.CodigoBarra ?? string.Empty, item.Unidade ?? string.Empty,
+                    DateTime.Now,usuCadastro
+                    );
+            }
+
             return itemsToAdd.Count;
         }
     }

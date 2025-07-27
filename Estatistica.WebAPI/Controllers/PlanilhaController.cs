@@ -66,11 +66,11 @@ namespace Estatistica.WebAPI.Controllers
             return Ok();
         }
 
-        [HttpPut("{id}/reprocessa")]
+        /*[HttpPut("{id}/reprocessa")]
         public async Task<IActionResult> ReprocessPlanilha([FromRoute] int id)
         {
             await planilhaService.UpdatePlanilhaStatus(id, PlanilhaStatusEnum.AguardandoProcessamento, "Renviar planilha para processamento");
             return NoContent();
-        }
+        }*/
     }
 }

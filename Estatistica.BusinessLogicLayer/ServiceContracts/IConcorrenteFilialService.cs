@@ -19,7 +19,7 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
         Task<ConcorrenteFilialGetResponse> UpdateConcorrenteFilial(string cnpj, int idConcorrente);
         Task<IEnumerable<ConcorrenteFilialGetResponse>> GetConcorrenteFiliaisByConcorrente(int concorrente);
         Task AddConcorrenteFilialPendenteRange(int planilhaId,List<ConcorrenteFilialPendente> concorrenteFilialPendenteList);
-        Task UpdateConcorrenteFilialPendente(string cnpj, Concorrente concorrente);
+        Task UpdateConcorrenteFilialPendente(string cnpj, int idConcorrente);
         Task<IEnumerable<ConcorrenteFilialPendenteGetResponse>> GetConcorrenteFilialPendentesAgrupado();        
     }
 }
