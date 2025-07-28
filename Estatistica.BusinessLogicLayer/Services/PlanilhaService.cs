@@ -264,18 +264,15 @@ namespace Estatistica.BusinessLogicLayer.Services
 
 
             var existedProducts = await concorrenteProdutoRepository.GetConcorrenteProdutosByCondition(x => products.Select(p => p.Id).Contains(x.Id));
-
             var productsToInclude = products.Where(x => !existedProducts.Select(x => x.Id).Contains(x.Id)).ToList();
+
+            var internalProducts = await produtoRepository.GetProdutosByConditionNoTracking(x => productsToInclude.Select(p => p.CodigoBarraConcorrente).Contains(x.CodigoBarra));
+
+
             foreach (var product in productsToInclude)
             {
-                if (!string.IsNullOrEmpty(product.CodigoBarraConcorrente))
-                {
-                    var internalProdutct = await produtoRepository.GetProductByCodigoBarra(product.CodigoBarraConcorrente);
-                    if (internalProdutct is not null)
-                        product.Produto = internalProdutct;
-                }
+                product.Produto = internalProducts.FirstOrDefault(x => x.CodigoBarra == product.CodigoBarraConcorrente);
             }
-
             await concorrenteProdutoRepository.AddConcorrenteProdutoRange(productsToInclude);
 
             return productsToInclude.Count;
@@ -320,13 +317,13 @@ namespace Estatistica.BusinessLogicLayer.Services
 
 
             var usuCadastro = nfcLista.FirstOrDefault()?.UsuarioCadastro ?? string.Empty;
-            foreach(var item in itemsToAdd)
+            foreach (var item in itemsToAdd)
             {
-                await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)",                    
+                await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)",
                     item.ConcorrenteProduto.Id, item.Nfc.ChaveNfe, item.Qtde, item.Valor,
                     item.UfOrigin ?? string.Empty, item.UfDestino ?? string.Empty,
                     item.CodigoBarra ?? string.Empty, item.Unidade ?? string.Empty,
-                    DateTime.Now,usuCadastro
+                    DateTime.Now, usuCadastro
                     );
             }
 

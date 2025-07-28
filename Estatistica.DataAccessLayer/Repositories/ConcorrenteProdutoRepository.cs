@@ -65,15 +65,30 @@ namespace Estatistica.DataAccessLayer.Repositories
                                               .ToListAsync();
         }
 
+        public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingSearch(
+                                                                Expression<Func<ConcorrenteProduto, bool>> expression, int pageSize, int pageNumber)
+        {
+            return await context.ConcorrenteProdutos
+                .AsNoTracking()
+                .Include(x => x.Concorrente)
+                .Include(x => x.Produto)
+                .Where(expression)
+                .OrderBy(x => x.Concorrente.Id)
+                .ThenBy(x => x.CodigoProdutoConcorrente)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingWithoutConcorrente(Expression<Func<ConcorrenteProduto, bool>> expression)
         {
-            return await context.ConcorrenteProdutos.AsNoTracking().Where(expression)                                              
+            return await context.ConcorrenteProdutos.AsNoTracking().Where(expression)
                                               .OrderBy(x => x.Concorrente.Id)
                                               .ThenBy(x => x.CodigoProdutoConcorrente)
                                               .ToListAsync();
         }
 
-        public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(string produtoId)
+        public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(int produtoId)
         {
             return await context.ConcorrenteProdutos
                                               .FirstOrDefaultAsync(x => x.Id == produtoId);

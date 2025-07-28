@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Estatistica.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250727014742_change-nfi-pk")]
-    partial class changenfipk
+    [Migration("20250727164938_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,8 +156,9 @@ namespace Estatistica.DataAccessLayer.Migrations
 
             modelBuilder.Entity("Estatistica.DataAccessLayer.Entities.ConcorrenteProduto", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
                     b.Property<string>("CodigoBarraConcorrente")
                         .HasColumnType("longtext")
@@ -231,9 +232,8 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.Property<string>("CodigoProdutoAntCodigoProduto")
                         .HasColumnType("varchar(15)");
 
-                    b.Property<string>("CodigoProdutoConcorrenteId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("CodigoProdutoConcorrenteId")
+                        .HasColumnType("int");
 
                     b.Property<int>("ConcorrenteId")
                         .HasColumnType("int");
@@ -333,9 +333,8 @@ namespace Estatistica.DataAccessLayer.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("codBarra");
 
-                    b.Property<string>("ConcorrenteProdutoId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
+                    b.Property<int>("ConcorrenteProdutoId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("DataCadastro")
                         .HasColumnType("datetime(6)")
@@ -447,8 +446,8 @@ namespace Estatistica.DataAccessLayer.Migrations
                         .HasColumnName("codProd");
 
                     b.Property<string>("CodigoBarra")
-                        .HasMaxLength(15)
-                        .HasColumnType("varchar(15)")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
                         .HasColumnName("codBarra");
 
                     b.Property<string>("CodigoFabrica")
@@ -538,13 +537,13 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "289c2d79-f8cc-4be8-a124-77aa2a9f333b",
+                            Id = "33a621d4-8f33-4ce5-833c-16a12fc076dd",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "4d25e68f-f133-4885-9bd2-96f9b460fa0d",
+                            Id = "fc4ab439-4811-43dc-9b9d-06611586ba8b",
                             Name = "RCA",
                             NormalizedName = "RCA"
                         });

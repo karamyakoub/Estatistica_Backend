@@ -8,11 +8,7 @@ namespace Estatistica.DataAccessLayer.Entities
     public class ConcorrenteProduto : FullAuditableEntity
     {
         [Key]
-        public string Id
-        {
-            get => $"{Concorrente?.Id}{CodigoProdutoConcorrente}";
-            private set { }
-        }
+        public int Id { get; set; }
         [Column("conId")]
         public required Concorrente Concorrente { get; set; }
         [Column("codProdCon")]

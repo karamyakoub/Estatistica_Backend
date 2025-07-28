@@ -17,7 +17,7 @@ namespace Estatistica.DataAccessLayer.Entities
         [MaxLength(50)]
         [Column("codFab")]
         public string? CodigoFabrica { get; set; }
-        [MaxLength(15)]
+        [MaxLength(50)]
         [Column("codBarra")]
         public string? CodigoBarra { get; set; }
         [Column("descricao")]

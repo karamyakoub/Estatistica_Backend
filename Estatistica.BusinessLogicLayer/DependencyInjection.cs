@@ -21,6 +21,7 @@ namespace Estatistica.BusinessLogicLayer
             services.AddScoped<IConcorrenteFilialService, ConcorrenteFilialService>();            
             services.AddScoped<IPlanilhaService, PlanilhaService>();            
             services.AddScoped<IProdutoService, ProdutoService>();            
+            services.AddScoped<IConcorrenteProdutoService, ConcorrenteProdutoService>();            
             return services;
         }
     }
