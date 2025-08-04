@@ -11,7 +11,7 @@ namespace Estatistica.BusinessLogicLayer.DTO
 {
     public class ConcorrenteProdutoSearchDto
     {
-        public int Id { get; set; }        
+        public string Id { get; set; }        
         public string? Concorrente { get; set; }        
         public required string CodigoProdutoConcorrente { get; set; }        
         public required string DescricaoProdutoConcorrente { get; set; }        
@@ -30,6 +30,7 @@ namespace Estatistica.BusinessLogicLayer.DTO
         public string? Linha { get; set; }                
         public string? Familia { get; set; }                
         public string? Unidade { get; set; }
+        public  string? TipoVinculo { get; set; }
 
     }
 }

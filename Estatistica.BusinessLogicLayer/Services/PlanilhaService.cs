@@ -9,6 +9,8 @@ using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Net.Http.Headers;
 
 namespace Estatistica.BusinessLogicLayer.Services
@@ -27,6 +29,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         private readonly IProdutoRepository produtoRepository;
         private readonly IUsuarioRepository usuarioRepository;
         private readonly IMapper mapper;
+        private readonly ILogger<PlanilhaService> logger;
         private readonly ApplicationDbContext dbContext;
 
         public PlanilhaService(IPlanilhaRepository planilhaRepository,
@@ -41,6 +44,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             IProdutoRepository produtoRepository,
             IUsuarioRepository usuarioRepository,
             IMapper mapper,
+            ILogger<PlanilhaService> logger,
             ApplicationDbContext dbContext)
         {
             this.planilhaRepository = planilhaRepository;
@@ -55,6 +59,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             this.produtoRepository=produtoRepository;
             this.usuarioRepository=usuarioRepository;
             this.mapper = mapper;
+            this.logger=logger;
             this.dbContext=dbContext;
         }
 
@@ -252,6 +257,7 @@ namespace Estatistica.BusinessLogicLayer.Services
 
             var products = distinctPlanilha.Select(x => new ConcorrenteProduto
             {
+                Id = $"{x.Concorrente.Id}{x.Planilha.CodigoProduto}",
                 Concorrente = x.Concorrente,
                 CodigoProdutoConcorrente = x.Planilha.CodigoProduto!,
                 DescricaoProdutoConcorrente = x.Planilha.DescricaoProduto!,
@@ -262,20 +268,29 @@ namespace Estatistica.BusinessLogicLayer.Services
                 UsuarioCadastro = planilha.UsuarioCadastro
             }).ToList();
 
+            var ids = products.Select(p => p.Id).ToList();
 
-            var existedProducts = await concorrenteProdutoRepository.GetConcorrenteProdutosByCondition(x => products.Select(p => p.Id).Contains(x.Id));
-            var productsToInclude = products.Where(x => !existedProducts.Select(x => x.Id).Contains(x.Id)).ToList();
+            var existingProducts = await concorrenteProdutoRepository
+                .GetConcorrenteProdutosByConditionNoTracking(x => ids.Contains(x.Id));
 
-            var internalProducts = await produtoRepository.GetProdutosByConditionNoTracking(x => productsToInclude.Select(p => p.CodigoBarraConcorrente).Contains(x.CodigoBarra));
+            var productsToInclude = products
+                .Where(p => !existingProducts.Select(e => e.Id).Contains(p.Id))
+                .ToList();
+
+            if (productsToInclude is null)
+                return 0;
+            var internalProducts = await produtoRepository.GetProdutosByCondition(x => productsToInclude.Select(p => p.CodigoBarraConcorrente).Contains(x.CodigoBarra));
 
 
             foreach (var product in productsToInclude)
             {
                 product.Produto = internalProducts.FirstOrDefault(x => x.CodigoBarra == product.CodigoBarraConcorrente);
+                if (product.Produto is not null)
+                    product.TipoVinculo = "CB";
             }
-            await concorrenteProdutoRepository.AddConcorrenteProdutoRange(productsToInclude);
+            await concorrenteProdutoRepository.AddConcorrenteProdutoRange(productsToInclude.ToList());
 
-            return productsToInclude.Count;
+            return productsToInclude.Count();
         }
 
         public async Task<int> IncludePlanilhaItems(Planilha planilha, IEnumerable<PlanilhaExcelModel>? planilhaLista)
@@ -300,6 +315,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                              from pJoined in gj3.DefaultIfEmpty()
                              select new Nfi
                              {
+                                 Id = $"{nJoined.ChaveNfe}{p.CodigoProduto}",
                                  Nfc = nJoined,
                                  CodigoBarra = p.CodigoBarra,
                                  DataCadastro = DateTime.Now,
@@ -313,18 +329,29 @@ namespace Estatistica.BusinessLogicLayer.Services
                              }).ToList();
 
             var existedItems = await nfiRespository.GetNfisByConditionNoTracking(x => itemsJoin.Select(x => x.Id).Contains(x.Id));
-            var itemsToAdd = itemsJoin.Where(x => !existedItems.Select(x => x.Id).Contains(x.Id)).ToList();
+            var existedIds = new HashSet<string>(existedItems.Select(x => x.Id));
+            var itemsToAdd = itemsJoin.Where(x => !existedIds.Contains(x.Id)).ToList();
 
+            itemsToAdd = itemsToAdd.GroupBy(x => x.Id)
+                .Select(x => x.First())
+                .ToList();
 
             var usuCadastro = nfcLista.FirstOrDefault()?.UsuarioCadastro ?? string.Empty;
             foreach (var item in itemsToAdd)
             {
-                await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)",
-                    item.ConcorrenteProduto.Id, item.Nfc.ChaveNfe, item.Qtde, item.Valor,
-                    item.UfOrigin ?? string.Empty, item.UfDestino ?? string.Empty,
-                    item.CodigoBarra ?? string.Empty, item.Unidade ?? string.Empty,
-                    DateTime.Now, usuCadastro
-                    );
+                try
+                {
+                    await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (Id, ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10)",
+                        item.Id, item.ConcorrenteProduto.Id, item.Nfc.ChaveNfe, item.Qtde, item.Valor,
+                        item.UfOrigin ?? string.Empty, item.UfDestino ?? string.Empty,
+                        item.CodigoBarra ?? string.Empty, item.Unidade ?? string.Empty,
+                        DateTime.Now, usuCadastro
+                        );
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error inserting item into Nfis table. Item ID: {ItemId}, ChaveNfe: {ChaveNfe}", item.Id, item.Nfc.ChaveNfe);
+                }
             }
 
             return itemsToAdd.Count;

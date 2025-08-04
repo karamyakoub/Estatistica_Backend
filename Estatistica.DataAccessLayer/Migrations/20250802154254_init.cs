@@ -328,8 +328,7 @@ namespace Estatistica.DataAccessLayer.Migrations
                 name: "ConcorrenteProdutos",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
                     ConcorrenteId = table.Column<int>(type: "int", nullable: false),
                     codProdCon = table.Column<string>(type: "longtext", nullable: false),
                     descProdCon = table.Column<string>(type: "longtext", nullable: false),
@@ -337,6 +336,7 @@ namespace Estatistica.DataAccessLayer.Migrations
                     codBarraCon = table.Column<string>(type: "longtext", nullable: true),
                     ProdutoCodigoProduto = table.Column<string>(type: "varchar(15)", nullable: true),
                     PlanilhaId = table.Column<int>(type: "int", nullable: true),
+                    tipoVinculo = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true),
                     dtCadastro = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     usuCadastro = table.Column<string>(type: "longtext", nullable: true),
                     dtAlter = table.Column<DateTime>(type: "datetime(6)", nullable: true),
@@ -400,7 +400,7 @@ namespace Estatistica.DataAccessLayer.Migrations
                     id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     ConcorrenteId = table.Column<int>(type: "int", nullable: false),
-                    CodigoProdutoConcorrenteId = table.Column<int>(type: "int", nullable: false),
+                    CodigoProdutoConcorrenteId = table.Column<string>(type: "varchar(255)", nullable: false),
                     CodigoProdutoAntCodigoProduto = table.Column<string>(type: "varchar(15)", nullable: true),
                     descProdConAnt = table.Column<string>(type: "longtext", nullable: false),
                     descProdConAtual = table.Column<string>(type: "longtext", nullable: false),
@@ -439,9 +439,8 @@ namespace Estatistica.DataAccessLayer.Migrations
                 name: "Nfis",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    ConcorrenteProdutoId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false),
+                    ConcorrenteProdutoId = table.Column<string>(type: "varchar(255)", nullable: false),
                     NfcChaveNfe = table.Column<string>(type: "varchar(255)", nullable: true),
                     qtde = table.Column<int>(type: "int", nullable: false),
                     valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -474,8 +473,8 @@ namespace Estatistica.DataAccessLayer.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "33a621d4-8f33-4ce5-833c-16a12fc076dd", null, "Admin", "Admin" },
-                    { "fc4ab439-4811-43dc-9b9d-06611586ba8b", null, "RCA", "RCA" }
+                    { "7d4f6ea4-7d82-4f27-8cd0-73e7a4ee0d0b", null, "Admin", "Admin" },
+                    { "9c2648cc-c643-4b43-abce-1958d666b1bb", null, "RCA", "RCA" }
                 });
 
             migrationBuilder.CreateIndex(

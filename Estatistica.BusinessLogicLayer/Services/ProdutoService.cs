@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Estatistica.BusinessLogicLayer.Data;
+using Estatistica.BusinessLogicLayer.DTO;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using System;
@@ -32,10 +33,17 @@ namespace Estatistica.BusinessLogicLayer.Services
             return (await produtoRepository.GetProductByCodigo(codigoProduto)) is not null;
         }
 
+        public async Task<IEnumerable<ProductSuggestionResponse>> GetProdutosSuggestion(string descricao)
+        {
+            return mapper.Map<IEnumerable<ProductSuggestionResponse>>(await produtoRepository.GetProdutosBySugesstion(descricao));
+        }
+
         public async Task UpdateProdutoRange(IEnumerable<Produto> produtos)
         {
             var produtosEntity = mapper.Map<IEnumerable<Estatistica.DataAccessLayer.Entities.Produto>>(produtos);
             await produtoRepository.UpdateProdutoRange(produtosEntity);
         }
+
+
     }
 }

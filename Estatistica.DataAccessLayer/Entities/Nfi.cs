@@ -13,7 +13,7 @@ namespace Estatistica.DataAccessLayer.Entities
     public class Nfi : CreationAuditableEntity
     {
         [Key]
-        public int Id { get; set; }        
+        public required string Id { get; set; }        
         [Column("codProd")]        
         public required ConcorrenteProduto ConcorrenteProduto { get; set; }
         [Column("chaveNfe")]        

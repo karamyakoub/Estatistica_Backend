@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Estatistica.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250727164938_init")]
+    [Migration("20250802154254_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -156,9 +156,8 @@ namespace Estatistica.DataAccessLayer.Migrations
 
             modelBuilder.Entity("Estatistica.DataAccessLayer.Entities.ConcorrenteProduto", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("CodigoBarraConcorrente")
                         .HasColumnType("longtext")
@@ -190,6 +189,11 @@ namespace Estatistica.DataAccessLayer.Migrations
 
                     b.Property<string>("ProdutoCodigoProduto")
                         .HasColumnType("varchar(15)");
+
+                    b.Property<string>("TipoVinculo")
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)")
+                        .HasColumnName("tipoVinculo");
 
                     b.Property<string>("UnidadeProdutoConcorrente")
                         .HasColumnType("longtext")
@@ -232,8 +236,9 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.Property<string>("CodigoProdutoAntCodigoProduto")
                         .HasColumnType("varchar(15)");
 
-                    b.Property<int>("CodigoProdutoConcorrenteId")
-                        .HasColumnType("int");
+                    b.Property<string>("CodigoProdutoConcorrenteId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
 
                     b.Property<int>("ConcorrenteId")
                         .HasColumnType("int");
@@ -325,16 +330,16 @@ namespace Estatistica.DataAccessLayer.Migrations
 
             modelBuilder.Entity("Estatistica.DataAccessLayer.Entities.Nfi", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("CodigoBarra")
                         .HasColumnType("longtext")
                         .HasColumnName("codBarra");
 
-                    b.Property<int>("ConcorrenteProdutoId")
-                        .HasColumnType("int");
+                    b.Property<string>("ConcorrenteProdutoId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
 
                     b.Property<DateTime?>("DataCadastro")
                         .HasColumnType("datetime(6)")
@@ -537,13 +542,13 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "33a621d4-8f33-4ce5-833c-16a12fc076dd",
+                            Id = "7d4f6ea4-7d82-4f27-8cd0-73e7a4ee0d0b",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "fc4ab439-4811-43dc-9b9d-06611586ba8b",
+                            Id = "9c2648cc-c643-4b43-abce-1958d666b1bb",
                             Name = "RCA",
                             NormalizedName = "RCA"
                         });

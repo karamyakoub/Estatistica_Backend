@@ -18,5 +18,6 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
         Task<bool> UpdateProdutoRange(IEnumerable<Produto> produtoList);
         Task<IEnumerable<Produto>> GetProdutosByCondition(Expression<Func<Produto, bool>> condition);
         Task<IEnumerable<Produto>> GetProdutosByConditionNoTracking(Expression<Func<Produto, bool>> condition);
+        Task<IEnumerable<Produto>> GetProdutosBySugesstion(string description);
     }
 }

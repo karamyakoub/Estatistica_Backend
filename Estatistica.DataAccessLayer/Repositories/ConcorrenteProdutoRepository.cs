@@ -65,8 +65,7 @@ namespace Estatistica.DataAccessLayer.Repositories
                                               .ToListAsync();
         }
 
-        public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingSearch(
-                                                                Expression<Func<ConcorrenteProduto, bool>> expression, int pageSize, int pageNumber)
+        public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingSeaarch(Expression<Func<ConcorrenteProduto, bool>> expression)
         {
             return await context.ConcorrenteProdutos
                 .AsNoTracking()
@@ -75,10 +74,10 @@ namespace Estatistica.DataAccessLayer.Repositories
                 .Where(expression)
                 .OrderBy(x => x.Concorrente.Id)
                 .ThenBy(x => x.CodigoProdutoConcorrente)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
         }
+
+        
 
         public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingWithoutConcorrente(Expression<Func<ConcorrenteProduto, bool>> expression)
         {
@@ -88,7 +87,7 @@ namespace Estatistica.DataAccessLayer.Repositories
                                               .ToListAsync();
         }
 
-        public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(int produtoId)
+        public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(string produtoId)
         {
             return await context.ConcorrenteProdutos
                                               .FirstOrDefaultAsync(x => x.Id == produtoId);
@@ -98,8 +97,9 @@ namespace Estatistica.DataAccessLayer.Repositories
         {
             var concorrenteProduto = await context.ConcorrenteProdutos.FindAsync(produtoId);
             if (concorrenteProduto is null)
-                return false;
+                throw new ArgumentNullException("Produto não encontrado");
             concorrenteProduto.Produto = produto;
+            concorrenteProduto.TipoVinculo = "MN";
             var affectedRows = await context.SaveChangesAsync();
             return affectedRows > 0;
         }
@@ -120,6 +120,7 @@ namespace Estatistica.DataAccessLayer.Repositories
             if (concorrenteProduto is null)
                 return false;
             concorrenteProduto.Produto = null;
+            concorrenteProduto.TipoVinculo = null;
             var affectedRows = await context.SaveChangesAsync();
             return affectedRows > 0;
         }
@@ -128,7 +129,7 @@ namespace Estatistica.DataAccessLayer.Repositories
         {
             var concorrenteProduto = await context.ConcorrenteProdutos.FirstOrDefaultAsync(x => x.Concorrente.Id == concorrenteId && x.CodigoProdutoConcorrente == codigoProdutoConcorrente);
             if (concorrenteProduto is null)
-                return false;
+                throw new ArgumentNullException("Produto não encontrado");
             concorrenteProduto.Produto = null;
             var affectedRows = await context.SaveChangesAsync();
             return affectedRows > 0;

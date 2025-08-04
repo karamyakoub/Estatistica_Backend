@@ -8,7 +8,7 @@ namespace Estatistica.DataAccessLayer.Entities
     public class ConcorrenteProduto : FullAuditableEntity
     {
         [Key]
-        public int Id { get; set; }
+        public required string Id { get; set; }
         [Column("conId")]
         public required Concorrente Concorrente { get; set; }
         [Column("codProdCon")]
@@ -23,6 +23,9 @@ namespace Estatistica.DataAccessLayer.Entities
         public Produto? Produto { get; set; }
         [Column("planilhaId")]
         public Planilha? Planilha { get; set; }
+        [MaxLength(2)]
+        [Column("tipoVinculo")]
+        public string? TipoVinculo { get; set; }
 
     }
 }

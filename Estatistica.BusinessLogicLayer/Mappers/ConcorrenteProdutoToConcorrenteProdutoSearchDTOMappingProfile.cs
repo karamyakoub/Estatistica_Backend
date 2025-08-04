@@ -13,8 +13,8 @@ namespace Estatistica.BusinessLogicLayer.Mappers
     {
         public ConcorrenteProdutoToConcorrenteProdutoSearchDTOMappingProfile()
         {
-            CreateMap<ConcorrenteProduto, ConcorrenteProdutoSearchDto>()
-                .ForMember(dest => dest.Concorrente, opt => opt.MapFrom(src => src.Concorrente.Nome))
+            CreateMap<ConcorrenteProduto, ConcorrenteProdutoSearchDto>()                
+                .ForMember(dest => dest.Concorrente, opt => opt.MapFrom(src => src.Concorrente.Nome))                
                 .ForMember(dest => dest.CodigoProduto, opt => opt.MapFrom(src => src.Produto == null ? null : src.Produto.CodigoProduto))
                 .ForMember(dest => dest.CodigoFabrica, opt => opt.MapFrom(src => src.Produto == null ? null : src.Produto.CodigoFabrica))
                 .ForMember(dest => dest.CodigoBarra, opt => opt.MapFrom(src => src.Produto == null ? null : src.Produto.CodigoBarra))

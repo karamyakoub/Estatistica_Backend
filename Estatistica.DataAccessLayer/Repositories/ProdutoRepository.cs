@@ -55,6 +55,19 @@ namespace Estatistica.DataAccessLayer.Repositories
         {
             return await context.Produtos.AsNoTracking().Where(condition).ToListAsync();
         }
+        public async Task<IEnumerable<Produto>> GetProdutosBySugesstion(string description)
+        {
+            return await context.Produtos.FromSqlRaw(@"SELECT 
+                                                        estatistica.produtos.*,
+                                                          MATCH(descricao) AGAINST (@Param) AS score
+                                                        FROM 
+                                                          estatistica.produtos
+                                                        WHERE 
+                                                          MATCH(descricao) AGAINST (@Param)
+                                                        ORDER BY 
+                                                          score DESC
+                                                        LIMIT 100",description).ToListAsync();
+        }
 
         public async Task<Produto> UpdateProduto(Produto produto)
         {
