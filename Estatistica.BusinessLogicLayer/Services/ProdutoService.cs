@@ -34,7 +34,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
 
         public async Task<IEnumerable<ProductSuggestionResponse>> GetProdutosSuggestion(string descricao)
-        {
+        {                     
             return mapper.Map<IEnumerable<ProductSuggestionResponse>>(await produtoRepository.GetProdutosBySugesstion(descricao));
         }
 

@@ -2,6 +2,7 @@
 using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Microsoft.EntityFrameworkCore;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,16 +58,28 @@ namespace Estatistica.DataAccessLayer.Repositories
         }
         public async Task<IEnumerable<Produto>> GetProdutosBySugesstion(string description)
         {
-            return await context.Produtos.FromSqlRaw(@"SELECT 
-                                                        estatistica.produtos.*,
-                                                          MATCH(descricao) AGAINST (@Param) AS score
-                                                        FROM 
-                                                          estatistica.produtos
-                                                        WHERE 
-                                                          MATCH(descricao) AGAINST (@Param)
-                                                        ORDER BY 
-                                                          score DESC
-                                                        LIMIT 100",description).ToListAsync();
+            try
+            {
+                var param = new MySqlParameter("@description", description);
+                var suggestionList = context.Produtos.FromSqlRaw<Produto>(@"SELECT 
+                                                                    codProd, codFab, codBarra, descricao,
+                                                                    fabricante, codMarca, descMarca,
+                                                                    tipo, subtipo, linha, familia,
+                                                                    unidade, dtCadastro
+                                                                FROM estatistica.produtos
+                                                                WHERE MATCH(descricao) AGAINST (@description)
+                                                                ORDER BY MATCH(descricao) AGAINST (@description) DESC
+                                                                LIMIT 100",param).ToList();
+
+
+                return suggestionList;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao buscar sugestao de produtos", ex);
+            }
         }
 
         public async Task<Produto> UpdateProduto(Produto produto)

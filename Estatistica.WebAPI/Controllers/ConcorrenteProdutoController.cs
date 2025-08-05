@@ -44,9 +44,10 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpGet("suggest-product")]
-        public async Task<IActionResult> GetProductSuggestion([FromQuery string descricao)
+        public async Task<IActionResult> GetProductSuggestion([FromQuery] string descricao)
         {
-            return Ok(produtoService.GetProdutosSuggestion(descricao));
+            var suggestionList = await produtoService.GetProdutosSuggestion(descricao);
+            return Ok(suggestionList);
         }
     }
 }
