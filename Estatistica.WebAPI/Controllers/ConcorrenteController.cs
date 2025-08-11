@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Estatistica.WebAPI.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    
     [ApiController]
     [Route("api/concorrente")]
     public class ConcorrenteController : ControllerBase
@@ -19,12 +19,14 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetConcorrentes(OrderByEnum orderBy)
         {
             return Ok(await concorrenteService.GetConcorrentes(orderBy));
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateConcorrente(ConcorrenteAddUpdateRequest dto)
         {
             var id = await concorrenteService.AddConcorrente(dto.ConcorrenteNome!);
@@ -32,6 +34,7 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateConcorrenteNome([FromRoute] int id, ConcorrenteAddUpdateRequest dto)
         {
             var concorrente = await concorrenteService.UpdateConcorrenteNome(id, dto.ConcorrenteNome!);
@@ -41,6 +44,7 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetConcorrenteById([FromRoute] int id)
         {
             var concorrente = await concorrenteService.GetConcorrenteById(id);

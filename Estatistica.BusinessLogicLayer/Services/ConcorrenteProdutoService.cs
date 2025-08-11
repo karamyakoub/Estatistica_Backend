@@ -56,7 +56,6 @@ namespace Estatistica.BusinessLogicLayer.Services
                            select changeProductUser(user.UserName ?? "", p);
             return productList;
         }
-
         public async Task<bool> UnLinkProduct(string CodigoProdutoConcorrente)
         {
             return await concorrenteProdutoRepository.UnlinkConcorrenteProduto(CodigoProdutoConcorrente);

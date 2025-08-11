@@ -315,7 +315,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                              from pJoined in gj3.DefaultIfEmpty()
                              select new Nfi
                              {
-                                 Id = $"{nJoined.ChaveNfe}{p.CodigoProduto}",
+                                 Id = $"{nJoined.ChaveNfe ?? string.Empty}{p.CodigoProduto}",
                                  Nfc = nJoined,
                                  CodigoBarra = p.CodigoBarra,
                                  DataCadastro = DateTime.Now,

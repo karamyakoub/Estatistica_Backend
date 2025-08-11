@@ -56,10 +56,11 @@ namespace Estatistica.BusinessLogicLayer.Data
             model.Cfop = Convert.ToString(dr[62]);
             model.Qtd  = Convert.ToInt32(dr[64] == DBNull.Value ? "0" : dr[64]);
             model.Unidade  = Convert.ToString(dr[63]);
-            model.ValorUnitario = Convert.ToDecimal((Convert.ToString(dr[65]) ?? Convert.ToString(dr[70]) ?? string.Empty).Replace(",", "."));
+            var t = (Convert.ToString(dr[65]) ?? Convert.ToString(dr[70]) ?? string.Empty);
+            model.ValorUnitario = Convert.ToDecimal((Convert.ToString(dr[65]) ?? Convert.ToString(dr[70]) ?? string.Empty));
             model.NumeroPedido = Convert.ToString(dr[72]);
-            model.BCST = Convert.ToDecimal((Convert.ToString(dr[106]) ?? string.Empty).Replace(",", "."));
-            model.VST = Convert.ToDecimal((Convert.ToString(dr[107]) ?? string.Empty).Replace(",", "."));
+            model.BCST = Convert.ToDecimal((Convert.ToString(dr[106]) ?? string.Empty));
+            model.VST = Convert.ToDecimal((Convert.ToString(dr[107]) ?? string.Empty));
             model.ChaveNfe = Convert.ToString(dr[159]);
             return model;
         }

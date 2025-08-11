@@ -9,7 +9,7 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
 {
     public interface IConcorrenteProdutoService
     {
-        Task<IEnumerable<ConcorrenteProdutoSearchDto>> SearchConcorrenteProdutos(string? idsConcorrente, string descricaoProduto, string fabricante);
+        Task<IEnumerable<ConcorrenteProdutoSearchDto>> SearchConcorrenteProdutos(string? idsConcorrente, string descricaoProduto, string fabricante);        
         Task<bool> LinkProduct(string CodigoProdutoConcorrente, string idProduto);
         Task<bool> UnLinkProduct(string CodigoProdutoConcorrente);
     }

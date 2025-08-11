@@ -62,7 +62,7 @@ namespace Estatistica.DataAccessLayer.Repositories
 
         public async Task<ConcorrenteFilial?> GetConcorrenteFilialByCnpj(string cnpj)
         {
-            return await context.ConcorrenteFilials
+            return await context.ConcorrenteFilials.Include(x => x.Concorrente)
                 .FirstOrDefaultAsync(cf => cf.Cnpj == cnpj);
         }
 
