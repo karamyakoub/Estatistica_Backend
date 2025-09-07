@@ -47,6 +47,10 @@ namespace Estatistica.DataAccessLayer.Entities
         [Column("unidade")]
         [MaxLength(4)]
         public string? Unidade { get; set; }
+        [Column("pVenda")]
+        public decimal? PrecoVenda { get; set; }
+        [Column("custo")]
+        public decimal? Custo { get; set; }
         [Column("dtCadastro")]
         public DateTime DataCadastro { get; set; }
 

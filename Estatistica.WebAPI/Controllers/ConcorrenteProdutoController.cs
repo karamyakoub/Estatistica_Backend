@@ -3,6 +3,8 @@ using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Globalization;
 
 namespace Estatistica.WebAPI.Controllers
 {
@@ -13,15 +15,18 @@ namespace Estatistica.WebAPI.Controllers
         private readonly IConcorrenteProdutoService concorrenteProdutoService;
         private readonly IProdutoService produtoService;
         private readonly IStatitsticService statitsticService;
+        private readonly ILogConcorrenteProdutoService logConcorrenteProdutoService;
 
         public ConcorrenteProdutoController(
             IConcorrenteProdutoService concorrenteProdutoService,
             IProdutoService produtoService,
-            IStatitsticService statitsticService)
+            IStatitsticService statitsticService,
+            ILogConcorrenteProdutoService logConcorrenteProdutoService)
         {
             this.concorrenteProdutoService=concorrenteProdutoService;
             this.produtoService=produtoService;
             this.statitsticService=statitsticService;
+            this.logConcorrenteProdutoService=logConcorrenteProdutoService;
         }
 
         [Authorize(Roles = "Admin")]
@@ -35,7 +40,7 @@ namespace Estatistica.WebAPI.Controllers
         [HttpPut("link-product")]
         public async Task<IActionResult> LinkProduct([FromBody] LinkProductRequest dto)
         {
-            var result = await concorrenteProdutoService.LinkProduct(dto.ConcorrenteProdutoId!, dto.InternalProductCode!);
+            var result = await concorrenteProdutoService.LinkProduct(dto.ConcorrenteProdutoId!, dto.InternalProductCode!);            
             return Ok(result);
         }
 
@@ -43,7 +48,7 @@ namespace Estatistica.WebAPI.Controllers
         [HttpPut("unlink-product")]
         public async Task<IActionResult> UnLinkProduct([FromBody] LinkProductRequest dto)
         {
-            var result = await concorrenteProdutoService.UnLinkProduct(dto.InternalProductCode!);
+            var result = await concorrenteProdutoService.UnLinkProduct(dto.ConcorrenteProdutoId!);
             return Ok(result);
         }
         [Authorize(Roles = "Admin")]
@@ -59,6 +64,15 @@ namespace Estatistica.WebAPI.Controllers
         {
             var concoreentesIds = string.IsNullOrWhiteSpace(idConcorrente) ? null : idConcorrente.Split(",").Select(x => int.Parse(x)).ToList();
             return Ok(await statitsticService.SearchProductPrice(dateTime, concoreentesIds ?? new List<int>(), textSearch));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("log-concorrente-produto")]
+        public async Task<IActionResult> GetLogConcorrenteProduto([FromQuery] string? startDate,[FromQuery] string? endDate , [FromQuery] string? textSearch)
+        {
+            DateTime.TryParseExact(startDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime firstDateFilter);
+            DateTime.TryParseExact(endDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime endDateFilter);            
+            return Ok(await logConcorrenteProdutoService.GetbyFilter(firstDateFilter,endDateFilter, textSearch ?? string.Empty));
         }
     }
 }

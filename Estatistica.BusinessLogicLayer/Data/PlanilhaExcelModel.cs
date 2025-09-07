@@ -14,6 +14,7 @@ namespace Estatistica.BusinessLogicLayer.Data
         public string? NomeMunicipio { get; set; }//26
         public string? UfOrigin { get; set; }//27
         public string? UfDestino { get; set; }//41
+        public string? CodigoMunicipio { get; set; }//25
         public string? CnpjCliente { get; set; }//34
         public string? NomeCliente { get; set; }//35
         public string? CodigoProduto { get; set; }//57
@@ -46,7 +47,8 @@ namespace Estatistica.BusinessLogicLayer.Data
             model.Fantasia = Convert.ToString(dr[20]);
             model.NomeMunicipio = Convert.ToString(dr[25]);
             model.UfOrigin = Convert.ToString(dr[26]);
-            model.UfDestino = Convert.ToString(dr[41]);
+            model.UfDestino = Convert.ToString(dr[40]);
+            model.CodigoMunicipio = Convert.ToString(dr[24]);
             model.CnpjCliente = Convert.ToString(dr[33]);
             model.NomeCliente = Convert.ToString(dr[34]);
             model.CodigoProduto = Convert.ToString(dr[56]);

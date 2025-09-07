@@ -20,6 +20,8 @@ namespace Estatistica.DataAccessLayer.Entities
         public required ConcorrenteProduto CodigoProdutoConcorrente { get; set; }
         [Column("codigoProdutoAnt")]
         public Produto? CodigoProdutoAnt { get; set; }
+        [Column("codigoProdutoAtual")]
+        public Produto? CodigoProdutoAtual { get; set; }
         [Column("descProdConAnt")]
         public required string DescricaoProdutoConcorrenteAnt { get; set; }
         [Column("descProdConAtual")]

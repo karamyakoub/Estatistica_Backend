@@ -34,6 +34,7 @@ namespace Estatistica.DataAccessLayer.Context
             builder.Entity<PlanilhaStatus>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             builder.Entity<ConcorrenteFilialTemp>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             builder.Entity<ConcorrenteFilialPendente>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
+            builder.Entity<Frete>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             //builder.Entity<Nfi>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             //builder.Entity<ConcorrenteProduto>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
 
@@ -68,5 +69,6 @@ namespace Estatistica.DataAccessLayer.Context
         public DbSet<Produto> Produtos { get; set; }
         public DbSet<ConcorrenteFilialPendente> ConcorrenteFilialPendentes { get; set; }
         public DbSet<ConcorrenteFilialTemp> ConcorrenteFilialTemps { get; set; }
+        public DbSet<Frete> Fretes { get; set; }
     }
 }

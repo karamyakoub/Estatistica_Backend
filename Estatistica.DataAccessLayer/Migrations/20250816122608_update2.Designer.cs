@@ -3,6 +3,7 @@ using System;
 using Estatistica.DataAccessLayer.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Estatistica.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250816122608_update2")]
+    partial class update2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -215,32 +218,6 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.ToTable("ConcorrenteProdutos");
                 });
 
-            modelBuilder.Entity("Estatistica.DataAccessLayer.Entities.Frete", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    b.Property<string>("CodMunicipio")
-                        .IsRequired()
-                        .HasColumnType("longtext")
-                        .HasColumnName("CodMuni");
-
-                    b.Property<decimal>("PercentualFrete")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("percFrete");
-
-                    b.Property<string>("Setor")
-                        .IsRequired()
-                        .HasColumnType("longtext")
-                        .HasColumnName("setor");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Fretes");
-                });
-
             modelBuilder.Entity("Estatistica.DataAccessLayer.Entities.LogConcorrenteProduto", b =>
                 {
                     b.Property<int>("Id")
@@ -360,10 +337,6 @@ namespace Estatistica.DataAccessLayer.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
-
-                    b.Property<string>("CodMunicipio")
-                        .HasColumnType("longtext")
-                        .HasColumnName("codMuni");
 
                     b.Property<string>("CodigoBarra")
                         .HasColumnType("longtext")
@@ -497,10 +470,6 @@ namespace Estatistica.DataAccessLayer.Migrations
                         .HasColumnType("int")
                         .HasColumnName("codMarca");
 
-                    b.Property<decimal?>("Custo")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("custo");
-
                     b.Property<DateTime>("DataCadastro")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("dtCadastro");
@@ -529,10 +498,6 @@ namespace Estatistica.DataAccessLayer.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("varchar(120)")
                         .HasColumnName("linha");
-
-                    b.Property<decimal?>("PrecoVenda")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("pVenda");
 
                     b.Property<string>("SubTipo")
                         .HasMaxLength(120)
@@ -582,13 +547,13 @@ namespace Estatistica.DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a6e95cf3-1a0d-40c3-b646-b3d673b38023",
+                            Id = "cf1264dc-65d7-4612-8ff3-c1fd3a719ebd",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "43b63863-3fef-4c40-81c9-4a0a621569a1",
+                            Id = "ed2b92a5-01a9-4fb3-b0ec-55108a69a8dd",
                             Name = "RCA",
                             NormalizedName = "RCA"
                         });

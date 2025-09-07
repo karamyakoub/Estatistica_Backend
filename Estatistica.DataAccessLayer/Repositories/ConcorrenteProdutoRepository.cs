@@ -90,6 +90,7 @@ namespace Estatistica.DataAccessLayer.Repositories
         public async Task<ConcorrenteProduto?> GetConcorrenteProdutosByProdutoId(string produtoId)
         {
             return await context.ConcorrenteProdutos
+                                              .Include(x => x.Concorrente)
                                               .FirstOrDefaultAsync(x => x.Id == produtoId);
         }
 
@@ -121,6 +122,7 @@ namespace Estatistica.DataAccessLayer.Repositories
                 return false;
             concorrenteProduto.Produto = null;
             concorrenteProduto.TipoVinculo = null;
+            context.Entry(concorrenteProduto).Property("ProdutoCodigoProduto").IsModified = true;
             var affectedRows = await context.SaveChangesAsync();
             return affectedRows > 0;
         }

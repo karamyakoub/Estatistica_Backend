@@ -21,6 +21,7 @@ namespace Estatistica.DataAccessLayer
             services.AddScoped<IProdutoRepository, ProdutoRepository>();
             services.AddScoped<IConcorrenteFilialPendenteRepository, ConcorrenteFilialPendenteRepository>();
             services.AddScoped<IConcorrenteFilialTempRepository, ConcorrenteFilialTempRepository>();
+            services.AddScoped<ILogConcorrenteProdutoRepository, LogConcorrenteProdutoRepository>();
             return services;
         }
     }

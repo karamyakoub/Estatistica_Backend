@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Estatistica.BusinessLogicLayer.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,6 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
         bool IsValidNfe(string xmlContent);
         Task<dynamic> CheckFilialPendente(string xmlContent);
         Task<bool> ImportNfeXml(string xmlContent);
+        Task<IEnumerable<NfcXmlGetResponse>> GetNfcXmlByPeriod(DateTime startDate, DateTime endDate);
     }
 }

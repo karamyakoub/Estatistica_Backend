@@ -38,6 +38,16 @@ namespace Estatistica.BusinessLogicLayer.Services
             return mapper.Map<IEnumerable<ProductSuggestionResponse>>(await produtoRepository.GetProdutosBySugesstion(descricao));
         }
 
+        public async Task<bool> UpdateProdutoPrice(string codigoProduto, decimal price,decimal custo)
+        {
+            var produto = await produtoRepository.GetProductByCodigo(codigoProduto);
+            if (produto is null) return false;
+            produto.PrecoVenda = price;
+            produto.Custo = custo;
+            await produtoRepository.UpdateProduto(produto);
+            return true;
+        }
+
         public async Task UpdateProdutoRange(IEnumerable<Produto> produtos)
         {
             var produtosEntity = mapper.Map<IEnumerable<Estatistica.DataAccessLayer.Entities.Produto>>(produtos);

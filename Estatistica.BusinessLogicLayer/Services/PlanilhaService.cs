@@ -297,22 +297,20 @@ namespace Estatistica.BusinessLogicLayer.Services
         {
             if (planilhaLista is null)
                 return 0;
-
             var nfcLista = await nfcRespository.GetNfcsByCondition(x => x.Planilha!.Id == planilha.Id);
-
             var concorrenteFiliais = await concorrenteFilialRepository.GetConcorrentesFiliais(x => x.Cnpj != null);
 
             var concorrenteProdutos = await concorrenteProdutoRepository
                 .GetConcorrenteProdutosByCondition(x => x.Concorrente != null);
 
-
+           
             var itemsJoin = (from p in planilhaLista!
                              join n in nfcLista on p.ChaveNfe equals n.ChaveNfe into gj
-                             from nJoined in gj.DefaultIfEmpty()
+                             from nJoined in gj
                              join cf in concorrenteFiliais on p.Cnpj equals cf.Cnpj into gj2
-                             from cfJoined in gj2.DefaultIfEmpty()
+                             from cfJoined in gj2
                              join prod in concorrenteProdutos on new { ConcorrenteId = cfJoined.Concorrente.Id, Prod = p.CodigoProduto } equals new { ConcorrenteId = prod.Concorrente.Id, Prod = prod.CodigoProdutoConcorrente } into gj3
-                             from pJoined in gj3.DefaultIfEmpty()
+                             from pJoined in gj3
                              select new Nfi
                              {
                                  Id = $"{nJoined.ChaveNfe ?? string.Empty}{p.CodigoProduto}",

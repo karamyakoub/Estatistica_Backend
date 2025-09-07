@@ -44,6 +44,8 @@ namespace Estatistica.DataAccessLayer.Repositories
         {
             return await context.Nfcs
                 .Where(condition)
+                .Include(x => x.ConcorrenteCnpj)
+                .ThenInclude(X => X.Concorrente)
                 .AsNoTracking()
                 .ToListAsync();
         }

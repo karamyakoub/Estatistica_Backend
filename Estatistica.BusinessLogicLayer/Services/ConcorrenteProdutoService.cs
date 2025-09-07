@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
 using Estatistica.BusinessLogicLayer.DTO;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
+using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Estatistica.BusinessLogicLayer.Services
 {
@@ -19,28 +13,56 @@ namespace Estatistica.BusinessLogicLayer.Services
         private readonly IMapper mapper;
         private readonly IProdutoRepository produtoRepository;
         private readonly IUsuarioRepository usuarioRepository;
+        private readonly ILogConcorrenteProdutoRepository logConcorrenteProdutoRepository;
+        private readonly IUsuarioService usuarioService;
 
         public ConcorrenteProdutoService(IConcorrenteProdutoRepository concorrenteProdutoRepository, IMapper mapper,
             IProdutoRepository produtoRepository,
-            IUsuarioRepository usuarioRepository)
+            IUsuarioRepository usuarioRepository,
+            ILogConcorrenteProdutoRepository logConcorrenteProdutoRepository,
+            IUsuarioService usuarioService)
         {
             this.concorrenteProdutoRepository=concorrenteProdutoRepository;
             this.mapper=mapper;
             this.produtoRepository=produtoRepository;
             this.usuarioRepository=usuarioRepository;
+            this.logConcorrenteProdutoRepository=logConcorrenteProdutoRepository;
+            this.usuarioService=usuarioService;
+        }
+
+        public async Task<int> GetTotalCount()
+        {
+            return (await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTracking(x => true)).Count();
         }
 
         public async Task<bool> LinkProduct(string CodigoProdutoConcorrente, string idProduto)
-        {
+        {            
             var produto = await produtoRepository.GetProductByCodigo(idProduto);
             if (produto is null) throw new ArgumentNullException("Produto nao encontrado");
-            return await concorrenteProdutoRepository.LinkConcorrenteProduto(CodigoProdutoConcorrente, produto);
+            var result = await concorrenteProdutoRepository.LinkConcorrenteProduto(CodigoProdutoConcorrente, produto);
+            if (result)
+            {
+                var concorrenteProduto = await concorrenteProdutoRepository.GetConcorrenteProdutosByProdutoId(CodigoProdutoConcorrente);
+                if (concorrenteProduto is not null)
+                {
+                    await logConcorrenteProdutoRepository.Add(new LogConcorrenteProduto
+                    {
+                        CodigoProdutoConcorrente = concorrenteProduto,
+                        Concorrente = concorrenteProduto.Concorrente,                        
+                        CodigoProdutoAtual = produto,
+                        DescricaoProdutoConcorrenteAnt = string.Empty,
+                        DescricaoProdutoConcorrenteAtual = string.Empty,
+                    });
+                }
+            }
+
+            return result;
         }
 
         public async Task<IEnumerable<ConcorrenteProdutoSearchDto>> SearchConcorrenteProdutos(string? idConcorrente, string descricaoProduto, string fabricante)
         {
-            List<int>? ids = null; 
-            if(!string.IsNullOrWhiteSpace(idConcorrente))
+            List<int>? ids = null;
+            if (!string.IsNullOrWhiteSpace(idConcorrente))
                 idConcorrente.Split(",").Select(x => int.Parse(x));
             var concorrenteProdutos = await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTrackingSeaarch(x =>
                    (ids == null || ids.Count() == 0 ? true : ids.Contains(x.Concorrente.Id)) &&
@@ -58,7 +80,23 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
         public async Task<bool> UnLinkProduct(string CodigoProdutoConcorrente)
         {
-            return await concorrenteProdutoRepository.UnlinkConcorrenteProduto(CodigoProdutoConcorrente);
+            var result = await concorrenteProdutoRepository.UnlinkConcorrenteProduto(CodigoProdutoConcorrente);
+            if (result)
+            {
+                var concorrenteProduto = await concorrenteProdutoRepository.GetConcorrenteProdutosByProdutoId(CodigoProdutoConcorrente);
+                if (concorrenteProduto is not null)
+                {
+                    await logConcorrenteProdutoRepository.Add(new LogConcorrenteProduto
+                    {
+                        CodigoProdutoConcorrente = concorrenteProduto,
+                        Concorrente = concorrenteProduto.Concorrente,                        
+                        CodigoProdutoAtual = null,
+                        DescricaoProdutoConcorrenteAnt = string.Empty,
+                        DescricaoProdutoConcorrenteAtual = string.Empty,
+                    });
+                }
+            }
+            return result;
         }
 
         private ConcorrenteProdutoSearchDto changeProductUser(string userName, ConcorrenteProdutoSearchDto p)

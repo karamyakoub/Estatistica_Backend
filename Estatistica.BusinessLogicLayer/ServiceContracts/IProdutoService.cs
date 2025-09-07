@@ -12,6 +12,7 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
         Task<bool> CheckProductExists(string codigoProduto);
         Task AddProdutoRange(IEnumerable<Estatistica.BusinessLogicLayer.Data.Produto> produtos);
         Task UpdateProdutoRange(IEnumerable<Estatistica.BusinessLogicLayer.Data.Produto> produtos);
+        Task<bool> UpdateProdutoPrice(string codigoProduto,decimal price,decimal custo);
         Task<IEnumerable<ProductSuggestionResponse>> GetProdutosSuggestion(string descricao);
         
     }

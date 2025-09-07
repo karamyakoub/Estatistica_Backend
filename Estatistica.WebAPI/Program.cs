@@ -68,7 +68,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors();
 
 //Hosted services
-//builder.Services.AddHostedService<CarregaProdutosHostedService>();
+builder.Services.AddHostedService<CarregaProdutosHostedService>();
 builder.Services.AddHostedService<PlanilhaProcessingService>();
 
 var app = builder.Build();
@@ -81,6 +81,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(options =>
+options.WithOrigins(
+    builder.Configuration.GetSection("AppConfigs")["ReactFrontendUrl"]!)
+.AllowAnyMethod()
+.AllowAnyHeader()
+.AllowCredentials());
+
 
 app.UseAuthorization();
 //Block the access to the register
@@ -97,12 +105,7 @@ app.MapIdentityApi<IdentityUser>().AddEndpointFilter(async (efiContext, next) =>
 }); ;
 
 app.MapControllers();
-app.UseCors(options => 
-options.WithOrigins(
-    builder.Configuration.GetSection("AppConfigs")["ReactFrontendUrl"]!)
-.AllowAnyMethod()
-.AllowAnyHeader()
-.AllowCredentials());
+
 
 app.Run();
 

@@ -26,6 +26,8 @@ namespace Estatistica.DataAccessLayer.Entities
         public string? UfOrigin { get; set; }
         [Column("ufDestino")]
         public string? UfDestino { get; set; }
+        [Column("codMuni")]
+        public string? CodMunicipio { get; set; }
         [Column("codBarra")]
         public string? CodigoBarra { get; set; }
         [Column("unidade")]

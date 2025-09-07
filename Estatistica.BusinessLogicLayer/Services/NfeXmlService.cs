@@ -1,4 +1,6 @@
-﻿using Estatistica.BusinessLogicLayer.ServiceContracts;
+﻿using AutoMapper;
+using Estatistica.BusinessLogicLayer.DTO;
+using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.BusinessLogicLayer.Utils;
 using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
@@ -19,19 +21,25 @@ namespace Estatistica.BusinessLogicLayer.Services
         private readonly INfcRespository nfcRespository;
         private readonly INfiRespository nfiRespository;
         private readonly IProdutoRepository produtoRepository;
+        private readonly IMapper mapper;
+        private readonly IUsuarioRepository usuarioRepository;
         const string chaveNfe = "http://www.portalfiscal.inf.br/nfe";
 
         public NfeXmlService(IConcorrenteProdutoRepository concorrenteProdutoRepository,
             IConcorrenteFilialRepository concorrenteFilialRepository,
             INfcRespository nfcRespository,
             INfiRespository nfiRespository,
-            IProdutoRepository produtoRepository)
+            IProdutoRepository produtoRepository,
+            IMapper mapper,
+            IUsuarioRepository usuarioRepository)
         {
             this.concorrenteProdutoRepository=concorrenteProdutoRepository;
             this.concorrenteFilialRepository=concorrenteFilialRepository;
             this.nfcRespository=nfcRespository;
             this.nfiRespository=nfiRespository;
             this.produtoRepository=produtoRepository;
+            this.mapper=mapper;
+            this.usuarioRepository=usuarioRepository;
         }
         public async Task<bool> ImportNfeXml(string xmlContent)
         {
@@ -216,6 +224,8 @@ namespace Estatistica.BusinessLogicLayer.Services
             // Obter UF origem e destino da nota
             string? ufOrigem = doc.SelectSingleNode("//nfe:emit/nfe:enderEmit/nfe:UF", ns)?.InnerText;
             string? ufDestino = doc.SelectSingleNode("//nfe:dest/nfe:enderDest/nfe:UF", ns)?.InnerText;
+            string? codMunicipioCliente = doc.SelectSingleNode("//nfe:dest/nfe:enderDest/nfe:cMun", ns)?.InnerText;
+
 
             var infNFeNode = doc.SelectSingleNode("//nfe:infNFe", ns);
             if (infNFeNode == null)
@@ -258,6 +268,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                     Valor = valor,
                     UfOrigin = ufOrigem,
                     UfDestino = ufDestino,
+                    CodMunicipio = codMunicipioCliente,
                     CodigoBarra = string.IsNullOrWhiteSpace(codBarra) ? null : codBarra,
                     Unidade = string.IsNullOrWhiteSpace(unidade) ? null : unidade
                 };
@@ -270,6 +281,20 @@ namespace Estatistica.BusinessLogicLayer.Services
             return itensNota;
         }
 
+        public async Task<IEnumerable<NfcXmlGetResponse>> GetNfcXmlByPeriod(DateTime startDate, DateTime endDate)
+        {
+            var xmls = mapper.Map<IEnumerable<NfcXmlGetResponse>>(await nfcRespository.GetNfcsByConditionNoTracking(x => x.Planilha == null
+            && (x.DataCadastro.HasValue && x.DataCadastro.Value.Date >= startDate && x.DataCadastro.Value.Date <= endDate)));
+
+            foreach(var xml in xmls)
+            {
+                if (!string.IsNullOrWhiteSpace(xml.IdUsuario))
+                {
+                    xml.Usuario = usuarioRepository.GetUsuarioById(xml.IdUsuario).Result?.Email;
+                }
+            }
+            return xmls;
+        }
 
     }
 }

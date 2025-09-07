@@ -32,17 +32,20 @@ namespace Estatistica.WebAPI.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            Task.Run(async () =>
             {
-                
-                await getProdutos(1,true);
-                for (int i = 1; i <= totalPages; i++)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await saveProdutos(i);
-                }
 
-                await Task.Delay(22 * 60 * 60  * 1000);
-            }
+                    await getProdutos(1, true);
+                    for (int i = 1; i <= totalPages; i++)
+                    {
+                        await saveProdutos(i);
+                    }
+
+                    await Task.Delay(22 * 60 * 60  * 1000);
+                }
+            });         
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
