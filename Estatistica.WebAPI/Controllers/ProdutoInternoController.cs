@@ -1,6 +1,7 @@
 ﻿using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace Estatistica.WebAPI.Controllers
 {
@@ -17,11 +18,13 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpPut("UpdateProdutoPrice")]
-        public async Task<IActionResult> UpdateProdutoPrice(string codigoProduto, decimal price, decimal custo)
+        public async Task<IActionResult> UpdateProdutoPrice(string codigoProduto, string price, string custo)
         {
-            if (price < 0 || custo < 0)
+            decimal.TryParse(price, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal priceParsed);
+            decimal.TryParse(price, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal custoParsed);
+            if (priceParsed <= 0 || custoParsed <= 0)
                 return BadRequest("Preco invalido");
-            await produtoService.UpdateProdutoPrice(codigoProduto, price, custo);
+            await produtoService.UpdateProdutoPrice(codigoProduto, priceParsed, custoParsed);
             return Ok($"Produto {codigoProduto} atualizado com sucesso.");
         }
     }

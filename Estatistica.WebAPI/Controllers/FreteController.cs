@@ -1,6 +1,7 @@
 ﻿using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace Estatistica.WebAPI.Controllers
 {
@@ -17,11 +18,12 @@ namespace Estatistica.WebAPI.Controllers
         }
 
         [HttpPost("AddUpdateFrete")]
-        public async Task<IActionResult> AddUpdateFrete(string setor, string codigoMunicipio, decimal percentualFrete)
+        public async Task<IActionResult> AddUpdateFrete(string setor, string codigoMunicipio, string percentualFrete)
         {
-            if (percentualFrete < 0)
+            decimal.TryParse(percentualFrete, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal percentualFreteDecimal);
+            if (percentualFreteDecimal <= 0)
                 return BadRequest("Percentual de frete invalido");
-            await freteService.AddUpdateFrete(setor, codigoMunicipio, percentualFrete);
+            await freteService.AddUpdateFrete(setor, codigoMunicipio, percentualFreteDecimal);
             return Ok($"Frete do setor {setor} e municipio {codigoMunicipio} atualizado com sucesso.");
         }
     }

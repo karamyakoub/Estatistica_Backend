@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.DataAccessLayer", "Estatistica.DataAccessLayer\Estatistica.DataAccessLayer.csproj", "{28D45AD9-BE33-4DDA-A03B-DADD3219BE8B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.BusinessLogicLayer", "Estatistica.BusinessLogicLayer\Estatistica.BusinessLogicLayer.csproj", "{3B66CDB1-B504-480C-83EC-4549D0DE2F41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.WebAPI", "Estatistica.WebAPI\Estatistica.WebAPI.csproj", "{677900F4-6CA0-4765-AD2E-1F37E45F7EAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatitica.PriceService", "Estatitica.PriceService\Estatitica.PriceService.csproj", "{689AC1B8-DE23-4082-B56B-B3879B1EF89D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{677900F4-6CA0-4765-AD2E-1F37E45F7EAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{677900F4-6CA0-4765-AD2E-1F37E45F7EAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{677900F4-6CA0-4765-AD2E-1F37E45F7EAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

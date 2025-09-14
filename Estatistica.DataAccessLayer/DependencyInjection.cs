@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Estatistica.DataAccessLayer
 {
     public static class DependencyInjection
-    {        
+    {
         public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, string connString)
-        {                                    
+        {
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IConcorrenteRepository, ConcorrenteRepository>();
             services.AddScoped<IConcorrenteFilialRepository, ConcorrenteFilialRepository>();
-            services.AddScoped<IConcorrenteProdutoRepository,ConcorrenteProdutoRepository>();
+            services.AddScoped<IConcorrenteProdutoRepository, ConcorrenteProdutoRepository>();
             services.AddScoped<INfcRespository, NfcRespository>();
             services.AddScoped<INfiRespository, NfiRepository>();
             services.AddScoped<IPlanilhaRepository, PlanilhaRepository>();
@@ -22,6 +22,7 @@ namespace Estatistica.DataAccessLayer
             services.AddScoped<IConcorrenteFilialPendenteRepository, ConcorrenteFilialPendenteRepository>();
             services.AddScoped<IConcorrenteFilialTempRepository, ConcorrenteFilialTempRepository>();
             services.AddScoped<ILogConcorrenteProdutoRepository, LogConcorrenteProdutoRepository>();
+            services.AddScoped<IFreteRepository, FreteRepository>();
             return services;
         }
     }
