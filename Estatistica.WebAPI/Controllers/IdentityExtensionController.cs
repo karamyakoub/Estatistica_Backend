@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Estatistica.WebAPI.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/users")]
     public class IdentityExtensionController : ControllerBase
@@ -28,7 +28,7 @@ namespace Estatistica.WebAPI.Controllers
             return Ok(await usuarioService.GetUsuarioById(userId));
         }
 
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] UsuarioRegisterAddRequest usuarioRegisterAddRequest)
         {            
