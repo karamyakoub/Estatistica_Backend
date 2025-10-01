@@ -65,7 +65,7 @@ namespace Estatistica.DataAccessLayer.Repositories
                                                                     codProd, codFab, codBarra, descricao,
                                                                     fabricante, codMarca, descMarca,
                                                                     tipo, subtipo, linha, familia,
-                                                                    unidade, dtCadastro
+                                                                    unidade, dtCadastro, custo, pvenda
                                                                 FROM estatistica.produtos
                                                                 WHERE MATCH(descricao) AGAINST (@description)
                                                                 ORDER BY MATCH(descricao) AGAINST (@description) DESC

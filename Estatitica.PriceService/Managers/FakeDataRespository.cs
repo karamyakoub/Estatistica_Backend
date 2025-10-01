@@ -13,7 +13,7 @@ namespace Estatitica.PriceService.Managers
         {
             var listaPrecoProduto = new List<PrecoProduto>
             {
-                new PrecoProduto { CodigoProduto = "10", Preco = "15.99", Custo ="10.50" },
+                new PrecoProduto { CodigoProduto = "47312", Preco = "15.99", Custo ="10.50" },
                 new PrecoProduto { CodigoProduto = "100", Preco = "25.00", Custo ="18.75" },
                 new PrecoProduto { CodigoProduto = "1000", Preco = "99.99", Custo ="70.00" },
                 new PrecoProduto { CodigoProduto = "100005", Preco = "150.00", Custo ="120.00" },

@@ -8,7 +8,7 @@ namespace Estatistica.DataAccessLayer
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, string connString)
+        public static IServiceCollection AddDataAccessLayer(this IServiceCollection services)
         {
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IConcorrenteRepository, ConcorrenteRepository>();

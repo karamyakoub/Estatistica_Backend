@@ -39,5 +39,14 @@ namespace Estatistica.DataAccessLayer.Repositories
             return await context.Nfis.Include(x => x.Nfc).AsNoTracking().Where(condition)
                 .ToListAsync();
         }
+
+        public async Task<bool> UpdateNfiCountCorrection(string id,int count)
+        {
+            var nfiToUpdate = await context.Nfis.FindAsync(id);
+            if(nfiToUpdate == null)
+                return false;
+            nfiToUpdate.QtdeCorrecao = count;
+            return (await context.SaveChangesAsync()) > 0;            
+        }
     }
 }

@@ -20,8 +20,13 @@ namespace Estatistica.DataAccessLayer.Context
         {            
         }
 
+        //public ApplicationDbContext()
+        //{
+        //    
+        //}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            //optionsBuilder.UseMySQL("Server=localhost;Database=estatistica;Uid=root;Pwd=karam1313;");
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -37,6 +42,8 @@ namespace Estatistica.DataAccessLayer.Context
             builder.Entity<Frete>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             //builder.Entity<Nfi>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
             //builder.Entity<ConcorrenteProduto>(e => e.Property(p => p.Id).ValueGeneratedOnAdd());
+
+            builder.Entity<VW_Estatistica>(e => e.HasNoKey().ToView("VW_Estatistica"));
 
             builder.Entity<IdentityRole>().HasData(
                     new IdentityRole
@@ -70,5 +77,6 @@ namespace Estatistica.DataAccessLayer.Context
         public DbSet<ConcorrenteFilialPendente> ConcorrenteFilialPendentes { get; set; }
         public DbSet<ConcorrenteFilialTemp> ConcorrenteFilialTemps { get; set; }
         public DbSet<Frete> Fretes { get; set; }
+        public DbSet<VW_Estatistica> vW_Estatisticas { get; set; }
     }
 }

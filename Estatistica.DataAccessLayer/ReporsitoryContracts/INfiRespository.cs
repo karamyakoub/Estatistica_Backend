@@ -14,5 +14,6 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
         Task<bool> AddNfiRange(List<Nfi> nfiList);
         Task<IEnumerable<Nfi>> GetNfisByCondition(Expression<Func<Nfi, bool>> condition);
         Task<IEnumerable<Nfi>> GetNfisByConditionNoTracking(Expression<Func<Nfi, bool>> condition);
+        Task<bool> UpdateNfiCountCorrection(string id, int count);
     }
 }

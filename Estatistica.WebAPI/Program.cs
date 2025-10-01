@@ -27,7 +27,7 @@ else
 
 //Add Dal and BLL
 
-builder.Services.AddDataAccessLayer(connString!);
+builder.Services.AddDataAccessLayer();
 builder.Services.AddBusinessLogicLayer();
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
 {
@@ -44,7 +44,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication()
     .AddBearerToken(IdentityConstants.BearerScheme, options =>
     {
-        options.BearerTokenExpiration = new TimeSpan(0, 15, 0);
+        var expirationMinutes = int.Parse(builder.Configuration.GetSection("AppConfigs")["TokenExpireInMinutes"] ?? "120");
+        options.BearerTokenExpiration = new TimeSpan(0, expirationMinutes, 0);
     });
 
 builder.Services.AddIdentityCore<IdentityUser>(options =>
@@ -60,7 +61,7 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
 
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -95,7 +96,15 @@ app.UseAuthorization();
 app.MapIdentityApi<IdentityUser>().AddEndpointFilter(async (efiContext, next) =>
 {
     var path = efiContext.HttpContext.Request.Path;
-    if (path.Equals("/register", StringComparison.OrdinalIgnoreCase))
+    if (path.Equals("/register", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/refresh", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/confirmEmail", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/resendConfirmationEmail", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/forgotPassword", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/resetPassword", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/manage/2fa", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/manage/info", StringComparison.OrdinalIgnoreCase)        
+    )
     {
         // Reject access for everyone
         return Results.Forbid();

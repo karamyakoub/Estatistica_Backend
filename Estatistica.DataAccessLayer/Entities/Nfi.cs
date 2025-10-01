@@ -31,7 +31,9 @@ namespace Estatistica.DataAccessLayer.Entities
         [Column("codBarra")]
         public string? CodigoBarra { get; set; }
         [Column("unidade")]
-        public string? Unidade { get; set; }       
+        public string? Unidade { get; set; }
+        [Column("qtdeCorrecao")]
+        public int QtdeCorrecao { get; set; }
 
     }
 }
