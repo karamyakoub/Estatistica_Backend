@@ -18,15 +18,17 @@ namespace Estatistica.WebAPI.Services
     public class PlanilhaProcessingService : BackgroundService
     {
         private readonly IServiceScopeFactory serviceScopeFactory;
+        private readonly ILogger logger;
         private IEnumerable<PlanilhaExcelModel>? planilhaLista;
         private readonly IServiceScope scope;
         private readonly IPlanilhaService planilhaService;
         private readonly IConcorrenteFilialService concorrenteFilialService;
         private readonly ApplicationDbContext context;
 
-        public PlanilhaProcessingService(IServiceScopeFactory serviceScopeFactory)
+        public PlanilhaProcessingService(IServiceScopeFactory serviceScopeFactory, ILogger logger)
         {
             this.serviceScopeFactory=serviceScopeFactory;
+            this.logger=logger;
             scope = serviceScopeFactory.CreateScope();
             planilhaService = scope.ServiceProvider.GetRequiredService<IPlanilhaService>();
             concorrenteFilialService = scope.ServiceProvider.GetRequiredService<IConcorrenteFilialService>();
@@ -75,18 +77,18 @@ namespace Estatistica.WebAPI.Services
                         await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
                     }
                 }
-                await Task.Delay(10000);
+                await Task.Delay(5 * 60 * 1000);
             }
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi iniciada");
+            logger.LogInformation($"{nameof(PlanilhaProcessingService)} foi iniciada");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi cancelada");
+            logger.LogInformation($"{nameof(PlanilhaProcessingService)} foi cancelada");
         }
 
         #endregion
@@ -263,7 +265,7 @@ namespace Estatistica.WebAPI.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                logger.LogError(ex.Message);
             }
 
         }
@@ -278,7 +280,7 @@ namespace Estatistica.WebAPI.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                logger.LogError(ex.Message);
             }
 
         }
@@ -292,7 +294,7 @@ namespace Estatistica.WebAPI.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                logger.LogError(ex.Message);
             }
 
         }

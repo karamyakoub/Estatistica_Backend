@@ -73,6 +73,11 @@ builder.Services.AddHostedService<CarregaProdutosHostedService>();
 builder.Services.AddHostedService<PlanilhaProcessingService>();
 
 var app = builder.Build();
+builder.Configuration
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 app.UseExceptionHandlingMiddleware();
 
@@ -83,9 +88,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+var allowedOrigins = builder.Configuration.GetSection("AppConfigs")["ReactFrontendUrl"]!;
+Console.WriteLine($"Running with allowed origins {allowedOrigins}");
 app.UseCors(options =>
-options.WithOrigins(
-    builder.Configuration.GetSection("AppConfigs")["ReactFrontendUrl"]!)
+options.WithOrigins(allowedOrigins)
 .AllowAnyMethod()
 .AllowAnyHeader()
 .AllowCredentials());
@@ -103,7 +110,7 @@ app.MapIdentityApi<IdentityUser>().AddEndpointFilter(async (efiContext, next) =>
         path.Equals("/forgotPassword", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/resetPassword", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/manage/2fa", StringComparison.OrdinalIgnoreCase) ||
-        path.Equals("/manage/info", StringComparison.OrdinalIgnoreCase)        
+        path.Equals("/manage/info", StringComparison.OrdinalIgnoreCase)
     )
     {
         // Reject access for everyone
