@@ -25,7 +25,7 @@ namespace Estatistica.WebAPI.Services
         private readonly IConcorrenteFilialService concorrenteFilialService;
         private readonly ApplicationDbContext context;
 
-        public PlanilhaProcessingService(IServiceScopeFactory serviceScopeFactory, ILogger logger)
+        public PlanilhaProcessingService(IServiceScopeFactory serviceScopeFactory, ILogger<PlanilhaProcessingService> logger)
         {
             this.serviceScopeFactory=serviceScopeFactory;
             this.logger=logger;
@@ -76,19 +76,19 @@ namespace Estatistica.WebAPI.Services
                     {
                         await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
                     }
+                    await Task.Delay(5 * 60 * 1000);
                 }
-                await Task.Delay(5 * 60 * 1000);
             }
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            logger.LogInformation($"{nameof(PlanilhaProcessingService)} foi iniciada");
+            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi iniciada");
         }
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            logger.LogInformation($"{nameof(PlanilhaProcessingService)} foi cancelada");
+            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi cancelada");
         }
 
         #endregion
@@ -110,6 +110,7 @@ namespace Estatistica.WebAPI.Services
 
         private async Task filterPlanilha(Planilha planilha)
         {
+            Console.WriteLine($"Iniciando o filtro da planilha {planilha.Id} - {planilha.NomePlanilha}");
             var concorrenteFiliaisTempoIncluidos = (await planilhaService.GetConcorrenteFilialTempByPlanilhaId(planilha.Id))?.Where(x => x.Incluido.HasValue && x.Incluido.Value);
             planilhaLista = planilhaLista?.Where(x => concorrenteFiliaisTempoIncluidos?.Any(y => y.Cnpj == x.Cnpj) ?? false).ToList();
         }
@@ -260,12 +261,13 @@ namespace Estatistica.WebAPI.Services
         {
             try
             {
+                Console.WriteLine($"Iniciando a inclusao dos cabecalhos das NFCs {planilha.Id} - {planilha.NomePlanilha}");
                 var cnt = await planilhaService.IncludePlanilhaHeader(planilha, planilhaLista);
                 await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.CabecalhosIncluidos, $"Nfc incluidos com sucesso, Qtd: {cnt}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                Console.WriteLine(ex.Message);
             }
 
         }
@@ -275,12 +277,13 @@ namespace Estatistica.WebAPI.Services
         {
             try
             {
+                Console.WriteLine($"Iniciando a inclusao dos produtos da planilha {planilha.Id} - {planilha.NomePlanilha}");
                 var cnt = await planilhaService.IncludePlanilhaProducts(planilha, planilhaLista);
                 await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProdutosIncluidos, $"Produtos Incluidos Com Sucesso, Qtd: {cnt}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                Console.WriteLine(ex.Message);
             }
 
         }
@@ -289,12 +292,13 @@ namespace Estatistica.WebAPI.Services
         {
             try            
             {
+                Console.WriteLine($"Iniciando a inclusao dos itens da planilha {planilha.Id} - {planilha.NomePlanilha}");
                 var cnt = await planilhaService.IncludePlanilhaItems(planilha, planilhaLista);
                 await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ItensIncluidos, $"NFI incluidos com sucesso, {cnt} itens");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                Console.WriteLine(ex.Message);
             }
 
         }

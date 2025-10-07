@@ -255,18 +255,19 @@ namespace Estatistica.BusinessLogicLayer.Services
                 .Select(x => x.First())
                 .ToList();
 
-            var products = distinctPlanilha.Select(x => new ConcorrenteProduto
-            {
-                Id = $"{x.Concorrente.Id}{x.Planilha.CodigoProduto}",
-                Concorrente = x.Concorrente,
-                CodigoProdutoConcorrente = x.Planilha.CodigoProduto!,
-                DescricaoProdutoConcorrente = x.Planilha.DescricaoProduto!,
-                UnidadeProdutoConcorrente = x.Planilha.Unidade,
-                CodigoBarraConcorrente = x.Planilha.CodigoBarra,
-                Planilha = planilha,
-                DataCadastro = DateTime.Now,
-                UsuarioCadastro = planilha.UsuarioCadastro
-            }).ToList();
+            var products = distinctPlanilha                
+                .Select(x => new ConcorrenteProduto
+                {
+                    Id = $"{x.Concorrente.Id}{x.Planilha.CodigoProduto}",
+                    Concorrente = x.Concorrente,
+                    CodigoProdutoConcorrente = x.Planilha.CodigoProduto!,
+                    DescricaoProdutoConcorrente = x.Planilha.DescricaoProduto!,
+                    UnidadeProdutoConcorrente = x.Planilha.Unidade,
+                    CodigoBarraConcorrente = x.Planilha.CodigoBarra,
+                    Planilha = planilha,
+                    DataCadastro = DateTime.Now,
+                    UsuarioCadastro = planilha.UsuarioCadastro
+                }).ToList();
 
             var ids = products.Select(p => p.Id).ToList();
 
@@ -276,6 +277,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             var productsToInclude = products
                 .Where(p => !existingProducts.Select(e => e.Id).Contains(p.Id))
                 .ToList();
+            productsToInclude = productsToInclude.Where(p => !string.IsNullOrEmpty(p.Id)).ToList();
 
             if (productsToInclude is null)
                 return 0;
@@ -288,7 +290,23 @@ namespace Estatistica.BusinessLogicLayer.Services
                 if (product.Produto is not null)
                     product.TipoVinculo = "CB";
             }
-            await concorrenteProdutoRepository.AddConcorrenteProdutoRange(productsToInclude.ToList());
+            var usuCadastro = planilha.UsuarioCadastro ?? string.Empty;
+            foreach (var item in productsToInclude)
+            {
+                try
+                {
+                    await dbContext.Database.ExecuteSqlRawAsync("insert into concorrenteprodutos (Id,ConcorrenteId,codProdCon,descProdCon,unProdCon,codBarraCon,ProdutoCodigoProduto,PlanilhaId,tipoVinculo,dtCadastro,usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10)",
+                        item.Id, item.Concorrente.Id, item.CodigoProdutoConcorrente, item.DescricaoProdutoConcorrente, item.UnidadeProdutoConcorrente ?? string.Empty,
+                        item.CodigoBarraConcorrente ?? string.Empty, item.Produto?.CodigoProduto,
+                        item.Planilha!.Id , item.TipoVinculo ?? string.Empty,
+                        DateTime.Now, usuCadastro
+                        );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error inserting product into ConcorrenteProdutos table. Concorrente: {ConcorrenteId}, Codigo: {ConcorrenteProdutoCodigo}", item.Concorrente.Id,item.CodigoProdutoConcorrente);
+                }
+            }
 
             return productsToInclude.Count();
         }
@@ -303,7 +321,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             var concorrenteProdutos = await concorrenteProdutoRepository
                 .GetConcorrenteProdutosByCondition(x => x.Concorrente != null);
 
-           
+
             var itemsJoin = (from p in planilhaLista!
                              join n in nfcLista on p.ChaveNfe equals n.ChaveNfe into gj
                              from nJoined in gj
@@ -348,7 +366,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "Error inserting item into Nfis table. Item ID: {ItemId}, ChaveNfe: {ChaveNfe}", item.Id, item.Nfc.ChaveNfe);
+                    Console.WriteLine("Error inserting item into Nfis table. Item ID: {ItemId}, ChaveNfe: {ChaveNfe}", item.Id, item.Nfc.ChaveNfe);
                 }
             }
 
