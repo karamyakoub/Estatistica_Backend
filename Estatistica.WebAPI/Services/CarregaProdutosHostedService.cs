@@ -80,7 +80,7 @@ namespace Estatistica.WebAPI.Services
 
                     }catch(Exception ex)
                     {
-
+                        Console.WriteLine($"Serviço {nameof(CarregaProdutosHostedService)}\nErro em salvar os produtos\nMessage: {ex.Message}");
                     }
                 }
             }
@@ -112,7 +112,7 @@ namespace Estatistica.WebAPI.Services
             }
             catch(Exception ex)
             {
-
+                Console.WriteLine($"Serviço {nameof(CarregaProdutosHostedService)}\nNão foi possivel carregar os produtos.\nMessage: {ex.Message}");
             }   
             return null;
         }

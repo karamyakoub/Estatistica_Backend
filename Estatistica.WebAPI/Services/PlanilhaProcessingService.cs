@@ -96,6 +96,7 @@ namespace Estatistica.WebAPI.Services
         #region Principal Methods
         private async Task readPlanilha(Planilha planilha)
         {
+            Console.WriteLine($"Starting read the planilha {planilha.NomePlanilha}");
             var planilhaDataTable = readExcelFileToDataTable(planilha.Caminho!);
             if (planilhaDataTable is null || validaPlanilha(planilhaDataTable))
             {
@@ -117,6 +118,7 @@ namespace Estatistica.WebAPI.Services
 
         private async Task<bool?> checkFiliaisPendentes(Planilha planilha)
         {
+            Console.WriteLine($"Iniciando a verificacao de filiais pendentes da planilha {planilha.Id} - {planilha.NomePlanilha}");
             var planilhaDataTable = readExcelFileToDataTable(planilha.Caminho!);
             if (planilhaDataTable is null || validaPlanilha(planilhaDataTable))
             {
@@ -165,7 +167,7 @@ namespace Estatistica.WebAPI.Services
         /// <returns></returns>
 
         private DataTable? readExcelFileToDataTable(string path)
-        {
+        {            
             using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
             {
                 using (var reader = ExcelReaderFactory.CreateReader(stream))

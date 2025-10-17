@@ -30,7 +30,7 @@ namespace Estatistica.BusinessLogicLayer.Data
         public string? ChaveNfe { get; set; }//160
         public string? Unidade { get; set; }
 
-        
+
 
 
 
@@ -42,7 +42,7 @@ namespace Estatistica.BusinessLogicLayer.Data
             model.Notafiscal = Convert.ToString(dr[3]);
             model.DataEmissao = dataEmissao;
             model.DataSaida = datasaida;
-            model.Cnpj = (Convert.ToString(dr[18]) ?? string.Empty).PadLeft(14,'0');
+            model.Cnpj = (Convert.ToString(dr[18]) ?? string.Empty).Length > 14 ? (Convert.ToString(dr[18]) ?? string.Empty).Substring(0, 14).PadLeft(14, '0') : (Convert.ToString(dr[18]) ?? string.Empty).PadLeft(14, '0');
             model.Concorrente = Convert.ToString(dr[19]);
             model.Fantasia = Convert.ToString(dr[20]);
             model.NomeMunicipio = Convert.ToString(dr[25]);
@@ -56,13 +56,16 @@ namespace Estatistica.BusinessLogicLayer.Data
             model.DescricaoProduto = Convert.ToString(dr[58]);
             model.Ncm = Convert.ToString(dr[59]);
             model.Cfop = Convert.ToString(dr[62]);
-            model.Qtd  = Convert.ToInt32(dr[64] == DBNull.Value ? "0" : dr[64]);
+            int.TryParse(Convert.ToString(dr[64]), out int qtd);
+            model.Qtd  = qtd;
             model.Unidade  = Convert.ToString(dr[63]);
-            var t = (Convert.ToString(dr[65]) ?? Convert.ToString(dr[70]) ?? string.Empty);
-            model.ValorUnitario = Convert.ToDecimal((Convert.ToString(dr[65]) ?? Convert.ToString(dr[70]) ?? string.Empty));
+            decimal.TryParse(Convert.ToString(dr[65]), out decimal valorUnitario);
+            model.ValorUnitario = valorUnitario;
             model.NumeroPedido = Convert.ToString(dr[72]);
-            model.BCST = Convert.ToDecimal((Convert.ToString(dr[106]) ?? string.Empty));
-            model.VST = Convert.ToDecimal((Convert.ToString(dr[107]) ?? string.Empty));
+            decimal.TryParse(Convert.ToString(dr[106]), out decimal bcst);
+            model.BCST = bcst;
+            decimal.TryParse(Convert.ToString(dr[107]), out decimal vst);
+            model.VST = vst;
             model.ChaveNfe = Convert.ToString(dr[159]);
             return model;
         }

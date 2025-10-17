@@ -8,8 +8,14 @@ using Estatistica.WebAPI.ServiceContracts;
 using Estatistica.WebAPI.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
@@ -71,6 +77,7 @@ builder.Services.AddCors();
 //Hosted services
 builder.Services.AddHostedService<CarregaProdutosHostedService>();
 builder.Services.AddHostedService<PlanilhaProcessingService>();
+builder.Services.AddHostedService<ItatiaiaService>();
 
 var app = builder.Build();
 builder.Configuration

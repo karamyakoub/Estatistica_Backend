@@ -255,7 +255,8 @@ namespace Estatistica.BusinessLogicLayer.Services
                 .Select(x => x.First())
                 .ToList();
 
-            var products = distinctPlanilha                
+            var products = distinctPlanilha
+                .Where(x => x.Concorrente != null && !string.IsNullOrWhiteSpace(x.Planilha.CodigoProduto))
                 .Select(x => new ConcorrenteProduto
                 {
                     Id = $"{x.Concorrente.Id}{x.Planilha.CodigoProduto}",
