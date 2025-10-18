@@ -23,51 +23,56 @@ namespace Estatistica.WebAPI.Services
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
-            while (true)
+            Task.Run(async () =>
             {
-                await Task.Delay(1 * 60 * 60 * 1000);
-                try
+                Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
+                while (true)
                 {
-                    //Get Product Prices from Itatiaia
-                    var dtProductsPrices = readProductsPriceItatiaia();
-                    if(dtProductsPrices is null)
-                        throw new Exception("Erro ao ler os preços dos produtos da Itatiaia.");
-                    await saveProductsPrice(dtProductsPrices!);
+                    await Task.Delay(1 * 60 * 60 * 1000);
+                    try
+                    {
+                        //Get Product Prices from Itatiaia
+                        var dtProductsPrices = readProductsPriceItatiaia();
+                        if (dtProductsPrices is null)
+                            throw new Exception("Erro ao ler os preços dos produtos da Itatiaia.");
+                        await saveProductsPrice(dtProductsPrices!);
 
 
 
-                    //Read the municipality-sector mapping table
-                    var dtMuniSetor = readTableMuniSetor();
-                    var dtSetorFrete = getSetorFrete();
-                    var dtMunicipios = getMunicipios();
+                        //Read the municipality-sector mapping table
+                        var dtMuniSetor = readTableMuniSetor();
+                        var dtSetorFrete = getSetorFrete();
+                        var dtMunicipios = getMunicipios();
 
-                    if (dtMuniSetor is null || dtSetorFrete is null || dtMunicipios is null)
-                        throw new Exception("Erro ao ler as tabelas para atualizar os fretes da Itatiaia.");
+                        if (dtMuniSetor is null || dtSetorFrete is null || dtMunicipios is null)
+                            throw new Exception("Erro ao ler as tabelas para atualizar os fretes da Itatiaia.");
 
 
-                    var dtJoin = from muniSetor in dtMuniSetor.AsEnumerable()
-                                  join frete in dtSetorFrete.AsEnumerable()
-                                  on Convert.ToString(muniSetor["setocodi"]) equals Convert.ToString(frete["codsetor"])
-                                  join muni in dtMunicipios.AsEnumerable()
-                                  on Convert.ToString(muniSetor["municpri"]) equals Convert.ToString(muni["codmuni"])
-                                  select new
-                                  {
-                                      CodSetor = Convert.ToString(muniSetor["setocodi"]),
-                                      CodMuni = Convert.ToString(muni["codmuni"]),
-                                      CodMuniIbeg = Convert.ToString(muni["codmuniibeg"]),
-                                      PercFrete = Convert.ToString(frete["percfrete"])
-                                  };                    
-                    if(dtJoin?.Count() > 0)
-                        await saveFretes(dtJoin);
+                        var dtJoin = from muniSetor in dtMuniSetor.AsEnumerable()
+                                     join frete in dtSetorFrete.AsEnumerable()
+                                     on Convert.ToString(muniSetor["setocodi"]) equals Convert.ToString(frete["codsetor"])
+                                     join muni in dtMunicipios.AsEnumerable()
+                                     on Convert.ToString(muniSetor["municpri"]) equals Convert.ToString(muni["codmuni"])
+                                     select new
+                                     {
+                                         CodSetor = Convert.ToString(muniSetor["setocodi"]),
+                                         CodMuni = Convert.ToString(muni["codmuni"]),
+                                         CodMuniIbeg = Convert.ToString(muni["codmuniibeg"]),
+                                         PercFrete = Convert.ToString(frete["percfrete"])
+                                     };
+                        if (dtJoin?.Count() > 0)
+                            await saveFretes(dtJoin);
 
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erro na execução do serviço Itatiaia\nErro:{ex.Message}");
+                    }
+                    await Task.Delay(23 * 60 * 60 * 1000);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro na execução do serviço Itatiaia\nErro:{ex.Message}");
-                }
-                await Task.Delay(23 * 60 * 60 * 1000);
-            }
+            });
+
+
         }
 
         private async Task saveFretes(dynamic dtJoin)

@@ -38,47 +38,50 @@ namespace Estatistica.WebAPI.Services
         #region Service Overrides
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            Task.Run(async () =>
             {
-                var planilhas = await planilhaService.GetPlanilhasForProcessing();
-                context.AttachRange(planilhas);
-
-                foreach (var planilha in planilhas)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    try
+                    var planilhas = await planilhaService.GetPlanilhasForProcessing();
+                    context.AttachRange(planilhas);
+
+                    foreach (var planilha in planilhas)
                     {
-                        switch (planilha.Status)
+                        try
                         {
-                            //Just added
-                            case (int)PlanilhaStatusEnum.AguardandoInclusao:
-                                if (!string.IsNullOrWhiteSpace(planilha.Caminho))
-                                    await readPlanilha(planilha);
-                                break;
-                            //Ready to process
-                            case (int)PlanilhaStatusEnum.AguardandoProcessamento:
-                                var hasPendentes = await checkFiliaisPendentes(planilha);
-                                if (hasPendentes.HasValue && !hasPendentes.Value)
-                                {
-                                    //Process the planilha
-                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
-                                    //Include just items in concorrentefilialTemp
-                                    await filterPlanilha(planilha);
-                                    await includePlanilhaProducts(planilha);
-                                    await includePlanilhaHeader(planilha);
-                                    await includePlanilhaItems(planilha);
-                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
-                                }
-                                break;
+                            switch (planilha.Status)
+                            {
+                                //Just added
+                                case (int)PlanilhaStatusEnum.AguardandoInclusao:
+                                    if (!string.IsNullOrWhiteSpace(planilha.Caminho))
+                                        await readPlanilha(planilha);
+                                    break;
+                                //Ready to process
+                                case (int)PlanilhaStatusEnum.AguardandoProcessamento:
+                                    var hasPendentes = await checkFiliaisPendentes(planilha);
+                                    if (hasPendentes.HasValue && !hasPendentes.Value)
+                                    {
+                                        //Process the planilha
+                                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
+                                        //Include just items in concorrentefilialTemp
+                                        await filterPlanilha(planilha);
+                                        await includePlanilhaProducts(planilha);
+                                        await includePlanilhaHeader(planilha);
+                                        await includePlanilhaItems(planilha);
+                                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
+                                    }
+                                    break;
+                            }
+                            context.Entry(planilha).State = EntityState.Detached;
                         }
-                        context.Entry(planilha).State = EntityState.Detached;
+                        catch (Exception ex)
+                        {
+                            await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
+                        }
+                        await Task.Delay(5 * 60 * 1000);
                     }
-                    catch (Exception ex)
-                    {
-                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
-                    }
-                    await Task.Delay(5 * 60 * 1000);
                 }
-            }
+            });
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
