@@ -337,6 +337,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                                  CodigoBarra = p.CodigoBarra,
                                  DataCadastro = DateTime.Now,
                                  Qtde = p.Qtd,
+                                 CodMunicipio = p.CodigoMunicipio,
                                  UfDestino = p.UfDestino,
                                  UfOrigin = p.UfOrigin,
                                  Unidade = p.Unidade,
