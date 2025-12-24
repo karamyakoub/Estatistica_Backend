@@ -359,11 +359,11 @@ namespace Estatistica.BusinessLogicLayer.Services
             {
                 try
                 {
-                    await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (Id, ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10)",
+                    await dbContext.Database.ExecuteSqlRawAsync("insert into Nfis (Id, ConcorrenteProdutoId, NfcChaveNfe, qtde, valor, ufOrigin, ufDestino, codBarra, unidade, dtCadastro, usuCadastro, codMuni) values (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11)",
                         item.Id, item.ConcorrenteProduto.Id, item.Nfc.ChaveNfe, item.Qtde, item.Valor,
                         item.UfOrigin ?? string.Empty, item.UfDestino ?? string.Empty,
                         item.CodigoBarra ?? string.Empty, item.Unidade ?? string.Empty,
-                        DateTime.Now, usuCadastro
+                        DateTime.Now, usuCadastro, item.CodMunicipio ?? string.Empty
                         );
                 }
                 catch (Exception ex)

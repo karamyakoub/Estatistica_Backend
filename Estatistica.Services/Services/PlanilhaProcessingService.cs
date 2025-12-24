@@ -7,100 +7,90 @@ using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
 using ExcelDataReader;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Estatistica.WebAPI.Services
+namespace Estatistica.Services.Services
 {
-    public class PlanilhaProcessingService : BackgroundService
+    internal class PlanilhaProcessingService
     {
-        private readonly IServiceScopeFactory serviceScopeFactory;
-        private readonly ILogger logger;
+
         private IEnumerable<PlanilhaExcelModel>? planilhaLista;
-        private readonly IServiceScope scope;
         private readonly IPlanilhaService planilhaService;
         private readonly IConcorrenteFilialService concorrenteFilialService;
         private readonly ApplicationDbContext context;
 
-        public PlanilhaProcessingService(IServiceScopeFactory serviceScopeFactory, ILogger<PlanilhaProcessingService> logger)
+        public PlanilhaProcessingService(IPlanilhaService planilhaService, IConcorrenteFilialService concorrenteFilialService, ApplicationDbContext context)
         {
-            this.serviceScopeFactory=serviceScopeFactory;
-            this.logger=logger;
-            scope = serviceScopeFactory.CreateScope();
-            planilhaService = scope.ServiceProvider.GetRequiredService<IPlanilhaService>();
-            concorrenteFilialService = scope.ServiceProvider.GetRequiredService<IConcorrenteFilialService>();
-            context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            this.planilhaService=planilhaService;
+            this.concorrenteFilialService=concorrenteFilialService;
+            this.context=context;
         }
 
         #region Service Overrides
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteAsync()
         {
-            Task.Run(async () =>
+            while (true)
             {
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    var planilhas = await planilhaService.GetPlanilhasForProcessing();
-                    context.AttachRange(planilhas);
+                var planilhas = await planilhaService.GetPlanilhasForProcessing();
+                Console.WriteLine($"Service {nameof(PlanilhaProcessingService)} Check for planilhas, {planilhas.Count()} planilhas encotradas");
+                context.AttachRange(planilhas);
 
-                    foreach (var planilha in planilhas)
+                foreach (var planilha in planilhas)
+                {
+                    try
                     {
-                        try
+                        switch (planilha.Status)
                         {
-                            switch (planilha.Status)
-                            {
-                                //Just added
-                                case (int)PlanilhaStatusEnum.AguardandoInclusao:
-                                    if (!string.IsNullOrWhiteSpace(planilha.Caminho))
-                                        await readPlanilha(planilha);
-                                    break;
-                                //Ready to process
-                                case (int)PlanilhaStatusEnum.AguardandoProcessamento:
-                                    var hasPendentes = await checkFiliaisPendentes(planilha);
-                                    if (hasPendentes.HasValue && !hasPendentes.Value)
-                                    {
-                                        //Process the planilha
-                                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
-                                        //Include just items in concorrentefilialTemp
-                                        await filterPlanilha(planilha);
-                                        await includePlanilhaProducts(planilha);
-                                        await includePlanilhaHeader(planilha);
-                                        await includePlanilhaItems(planilha);
-                                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
-                                    }
-                                    break;
-                            }
-                            context.Entry(planilha).State = EntityState.Detached;
+                            //Just added
+                            case (int)PlanilhaStatusEnum.AguardandoInclusao:
+                                if (!string.IsNullOrWhiteSpace(planilha.Caminho))
+                                    await readPlanilha(planilha);
+                                break;
+                            //Ready to process
+                            case (int)PlanilhaStatusEnum.AguardandoProcessamento:
+                                var hasPendentes = await checkFiliaisPendentes(planilha);
+                                if (hasPendentes.HasValue && !hasPendentes.Value)
+                                {
+                                    //Process the planilha
+                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.EmProcesso, "Processando a planilha.");
+                                    //Include just items in concorrentefilialTemp
+                                    await filterPlanilha(planilha);
+                                    await includePlanilhaProducts(planilha);
+                                    await includePlanilhaHeader(planilha);
+                                    await includePlanilhaItems(planilha);
+                                    await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.ProcessamentoConcluido, "Planilha incluida com sucesso");
+                                }
+                                break;
                         }
-                        catch (Exception ex)
-                        {
-                            await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {ex.Message}");
-                        }
-                        await Task.Delay(5 * 60 * 1000);
+                        context.Entry(planilha).State = EntityState.Detached;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        var errorMsg = ex.Message.Length > 70 ? ex.Message.Substring(0, 65) : ex.Message;
+                        await planilhaService.UpdatePlanilhaStatus(planilha.Id, PlanilhaStatusEnum.Erro, $"Erro ao processar a planilha: {errorMsg}");
                     }
                 }
-            });
+                await Task.Delay(5 * 60 * 1000);
+            }
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi iniciada");
-        }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            Console.WriteLine($"{nameof(PlanilhaProcessingService)} foi cancelada");
-        }
 
         #endregion
 
         #region Principal Methods
         private async Task readPlanilha(Planilha planilha)
         {
-            Console.WriteLine($"Starting read the planilha {planilha.NomePlanilha}");
-            var planilhaDataTable = readExcelFileToDataTable(planilha.Caminho!);
+            var mainPath = ConfigurationManager.AppSettings["CaminhoPlanilha"];
+            var fullPath = Path.Combine(mainPath!, planilha.Caminho!);
+            Console.WriteLine($"Starting read the planilha {fullPath}");
+            var planilhaDataTable = readExcelFileToDataTable(fullPath!);
             if (planilhaDataTable is null || validaPlanilha(planilhaDataTable))
             {
                 planilha.Status = (int)PlanilhaStatusEnum.Erro;
@@ -121,8 +111,10 @@ namespace Estatistica.WebAPI.Services
 
         private async Task<bool?> checkFiliaisPendentes(Planilha planilha)
         {
-            Console.WriteLine($"Iniciando a verificacao de filiais pendentes da planilha {planilha.Id} - {planilha.NomePlanilha}");
-            var planilhaDataTable = readExcelFileToDataTable(planilha.Caminho!);
+            var mainPath = ConfigurationManager.AppSettings["CaminhoPlanilha"];
+            var fullPath = Path.Combine(mainPath!, planilha.Caminho!);
+            Console.WriteLine($"Iniciando a verificacao de filiais pendentes da planilha {planilha.Id} - {planilha.NomePlanilha} Caminho {fullPath}");
+            var planilhaDataTable = readExcelFileToDataTable(fullPath!);
             if (planilhaDataTable is null || validaPlanilha(planilhaDataTable))
             {
                 planilha.Status = (int)PlanilhaStatusEnum.Erro;
@@ -170,8 +162,8 @@ namespace Estatistica.WebAPI.Services
         /// <returns></returns>
 
         private DataTable? readExcelFileToDataTable(string path)
-        {            
-            using (var stream = File.Open(path, FileMode.Open, FileAccess.Read))
+        {
+            using (var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 using (var reader = ExcelReaderFactory.CreateReader(stream))
                 {
@@ -295,7 +287,7 @@ namespace Estatistica.WebAPI.Services
 
         private async Task includePlanilhaItems(Planilha planilha)
         {
-            try            
+            try
             {
                 Console.WriteLine($"Iniciando a inclusao dos itens da planilha {planilha.Id} - {planilha.NomePlanilha}");
                 var cnt = await planilhaService.IncludePlanilhaItems(planilha, planilhaLista);

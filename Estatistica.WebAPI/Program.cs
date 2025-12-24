@@ -74,11 +74,6 @@ builder.Services.AddSwaggerGen();
 // Add cors
 builder.Services.AddCors();
 
-//Hosted services
-builder.Services.AddHostedService<CarregaProdutosHostedService>();
-builder.Services.AddHostedService<PlanilhaProcessingService>();
-builder.Services.AddHostedService<ItatiaiaService>();
-
 var app = builder.Build();
 builder.Configuration
     .SetBasePath(AppContext.BaseDirectory)

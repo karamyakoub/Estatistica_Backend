@@ -2,97 +2,91 @@
 using Estatistica.BusinessLogicLayer.ServiceContracts;
 using ExcelDataReader;
 using Npgsql;
+using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Text;
 
-namespace Estatistica.WebAPI.Services
+namespace Estatistica.Services.Services
 {
-    public class ItatiaiaService : BackgroundService
+    internal class ItatiaiaService
     {
         private readonly string connString;
-        private readonly IConfiguration configuration;
-        private readonly IServiceScopeFactory scopeFactory;
+        private readonly IFreteService freteService;
+        private readonly IProdutoService produtoService;
 
-        public ItatiaiaService(IConfiguration configuration, IServiceScopeFactory scopeFactory)
+        public ItatiaiaService(IFreteService freteService, IProdutoService produtoService)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            connString = configuration.GetConnectionString("itatiaia") ?? string.Empty;
-            this.configuration=configuration;
-            this.scopeFactory=scopeFactory;
+            connString = ConfigurationManager.AppSettings["ConnStrItatiaia"] ?? string.Empty;
+            this.freteService=freteService;
+            this.produtoService=produtoService;
         }
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteAsync()
         {
-            Task.Run(async () =>
+            Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
+            while (true)
             {
-                Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
-                while (true)
+                await Task.Delay(1 * 60 * 60 * 1000);
+                try
                 {
-                    await Task.Delay(1 * 60 * 60 * 1000);
-                    try
-                    {
-                        //Get Product Prices from Itatiaia
-                        var dtProductsPrices = readProductsPriceItatiaia();
-                        if (dtProductsPrices is null)
-                            throw new Exception("Erro ao ler os preços dos produtos da Itatiaia.");
-                        await saveProductsPrice(dtProductsPrices!);
+                    //Get Product Prices from Itatiaia
+                    var dtProductsPrices = readProductsPriceItatiaia();
+                    if (dtProductsPrices is null)
+                        throw new Exception("Erro ao ler os preços dos produtos da Itatiaia.");
+                    await saveProductsPrice(dtProductsPrices!);
 
 
 
-                        //Read the municipality-sector mapping table
-                        var dtMuniSetor = readTableMuniSetor();
-                        var dtSetorFrete = getSetorFrete();
-                        var dtMunicipios = getMunicipios();
+                    //Read the municipality-sector mapping table
+                    var dtMuniSetor = readTableMuniSetor();
+                    var dtSetorFrete = getSetorFrete();
+                    var dtMunicipios = getMunicipios();
 
-                        if (dtMuniSetor is null || dtSetorFrete is null || dtMunicipios is null)
-                            throw new Exception("Erro ao ler as tabelas para atualizar os fretes da Itatiaia.");
+                    if (dtMuniSetor is null || dtSetorFrete is null || dtMunicipios is null)
+                        throw new Exception("Erro ao ler as tabelas para atualizar os fretes da Itatiaia.");
 
 
-                        var dtJoin = from muniSetor in dtMuniSetor.AsEnumerable()
-                                     join frete in dtSetorFrete.AsEnumerable()
-                                     on Convert.ToString(muniSetor["setocodi"]) equals Convert.ToString(frete["codsetor"])
-                                     join muni in dtMunicipios.AsEnumerable()
-                                     on Convert.ToString(muniSetor["municpri"]) equals Convert.ToString(muni["codmuni"])
-                                     select new
-                                     {
-                                         CodSetor = Convert.ToString(muniSetor["setocodi"]),
-                                         CodMuni = Convert.ToString(muni["codmuni"]),
-                                         CodMuniIbeg = Convert.ToString(muni["codmuniibeg"]),
-                                         PercFrete = Convert.ToString(frete["percfrete"])
-                                     };
-                        if (dtJoin?.Count() > 0)
-                            await saveFretes(dtJoin);
+                    var dtJoin = from muniSetor in dtMuniSetor.AsEnumerable()
+                                 join frete in dtSetorFrete.AsEnumerable()
+                                 on Convert.ToString(muniSetor["setocodi"]) equals Convert.ToString(frete["codsetor"])
+                                 join muni in dtMunicipios.AsEnumerable()
+                                 on Convert.ToString(muniSetor["municpri"]) equals Convert.ToString(muni["codmuni"])
+                                 select new
+                                 {
+                                     CodSetor = Convert.ToString(muniSetor["setocodi"]),
+                                     CodMuni = Convert.ToString(muni["codmuni"]),
+                                     CodMuniIbeg = Convert.ToString(muni["codmuniibeg"]),
+                                     PercFrete = Convert.ToString(frete["percfrete"])
+                                 };
+                    if (dtJoin?.Count() > 0)
+                        await saveFretes(dtJoin);
 
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Erro na execução do serviço Itatiaia\nErro:{ex.Message}");
-                    }
-                    await Task.Delay(23 * 60 * 60 * 1000);
                 }
-            });
-
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro na execução do serviço Itatiaia\nErro:{ex.Message}");
+                }
+                await Task.Delay(23 * 60 * 60 * 1000);
+            }
 
         }
 
         private async Task saveFretes(dynamic dtJoin)
         {
-            using (var scope = scopeFactory.CreateScope())
+            foreach (var row in dtJoin)
             {
-                var freteService = scope.ServiceProvider.GetRequiredService<IFreteService>();
-                foreach (var row in dtJoin)
+                try
                 {
-                    try
-                    {
-                        decimal.TryParse(row.PercFrete, out decimal percFrete);
-                        await freteService.AddUpdateFrete(row.CodSetor, row.CodMuniIbeg, percFrete);
-                    }
-                    catch
-                    {
+                    decimal.TryParse(row.PercFrete, out decimal percFrete);
+                    await freteService.AddUpdateFrete(row.CodSetor, row.CodMuniIbeg, percFrete);
+                }
+                catch
+                {
 
-                    }
                 }
             }
+
         }
 
         /// <summary>
@@ -102,21 +96,17 @@ namespace Estatistica.WebAPI.Services
         /// <returns></returns>
         private async Task saveProductsPrice(DataTable dtProductsPrices)
         {
-            using (var scope = scopeFactory.CreateScope())
+            foreach (DataRow dr in dtProductsPrices.Rows)
             {
-                var produtoService = scope.ServiceProvider.GetRequiredService<IProdutoService>();
-                foreach (DataRow dr in dtProductsPrices.Rows)
+                try
                 {
-                    try
-                    {
-                        await produtoService.UpdateProdutoPrice(dr["codigo"].ToString() ?? string.Empty,
-                            Convert.ToDecimal(dr["pvenda"]),
-                            Convert.ToDecimal(dr["custo"]));
-                    }
-                    catch
-                    {
+                    await produtoService.UpdateProdutoPrice(dr["codigo"].ToString() ?? string.Empty,
+                        Convert.ToDecimal(dr["pvenda"]),
+                        Convert.ToDecimal(dr["custo"]));
+                }
+                catch
+                {
 
-                    }
                 }
             }
         }

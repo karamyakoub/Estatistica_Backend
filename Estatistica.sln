@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.WebAPI", "Estat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatitica.PriceService", "Estatitica.PriceService\Estatitica.PriceService.csproj", "{689AC1B8-DE23-4082-B56B-B3879B1EF89D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.Services", "Estatistica.Services\Estatistica.Services.csproj", "{6C50016D-D540-4522-96CC-23AECE60D2F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{689AC1B8-DE23-4082-B56B-B3879B1EF89D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C50016D-D540-4522-96CC-23AECE60D2F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C50016D-D540-4522-96CC-23AECE60D2F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C50016D-D540-4522-96CC-23AECE60D2F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C50016D-D540-4522-96CC-23AECE60D2F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
