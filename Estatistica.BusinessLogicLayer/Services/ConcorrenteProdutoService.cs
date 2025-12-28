@@ -63,7 +63,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         {
             List<int>? ids = null;
             if (!string.IsNullOrWhiteSpace(idConcorrente))
-                idConcorrente.Split(",").Select(x => int.Parse(x));
+                ids = idConcorrente.Split(",").Select(x => int.Parse(x)).ToList();
             var concorrenteProdutos = await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTrackingSeaarch(x =>
                    (ids == null || ids.Count() == 0 ? true : ids.Contains(x.Concorrente.Id)) &&
                     (string.IsNullOrWhiteSpace(descricaoProduto) ? true : x.DescricaoProdutoConcorrente.Contains(descricaoProduto, StringComparison.OrdinalIgnoreCase)) &&

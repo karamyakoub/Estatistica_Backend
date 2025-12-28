@@ -18,7 +18,6 @@ namespace Estatistica.DataAccessLayer.Entities
         [MaxLength(100)]
         [Column("nome")]
         public required string Nome { get; set; }
-
-       
+        public ICollection<ConcorrenteFilial> Filiais { get; set; } = new List<ConcorrenteFilial>();
     }
 }

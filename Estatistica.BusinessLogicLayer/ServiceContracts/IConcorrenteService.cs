@@ -8,7 +8,7 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
     {
         Task<int> AddConcorrente(string nome);
         Task<ConcorrenteGetResponse?> GetConcorrenteById(int id);
-        Task<IEnumerable<Concorrente>> GetConcorrentes(OrderByEnum orderBy);
+        Task<IEnumerable<ConcorrenteGetResponse>> GetConcorrentes(OrderByEnum orderBy);
         Task<ConcorrenteGetResponse?> UpdateConcorrenteNome(int id, string nome);
     }
 }

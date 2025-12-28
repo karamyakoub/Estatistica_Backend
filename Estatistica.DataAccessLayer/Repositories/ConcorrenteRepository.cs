@@ -19,8 +19,10 @@ namespace Estatistica.DataAccessLayer.Repositories
         {
             this.context=context;
         }
-        public async Task<IEnumerable<Concorrente>> GetConcorrentes()
+        public async Task<IEnumerable<Concorrente>> GetConcorrentes(bool? includeFiliais = null)
         {
+            if (includeFiliais.HasValue && includeFiliais.Value)
+                return await context.Concorrentes.Include(x => x.Filiais).ToListAsync();
             return await context.Concorrentes.ToListAsync();
         }
 

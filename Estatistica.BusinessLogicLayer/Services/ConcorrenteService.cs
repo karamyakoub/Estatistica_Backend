@@ -17,11 +17,13 @@ namespace Estatistica.BusinessLogicLayer.Services
     public class ConcorrenteService : IConcorrenteService
     {
         private readonly IConcorrenteRepository repo;
+        private readonly IConcorrenteFilialRepository fRepo;
         private readonly IMapper mapper;
 
-        public ConcorrenteService(IConcorrenteRepository repo, IMapper mapper)
+        public ConcorrenteService(IConcorrenteRepository repo, IConcorrenteFilialRepository fRepo, IMapper mapper)
         {
             this.repo = repo;
+            this.fRepo=fRepo;
             this.mapper = mapper;
         }
         public async Task<int> AddConcorrente(string nome)
@@ -49,13 +51,16 @@ namespace Estatistica.BusinessLogicLayer.Services
             return null;
         }
 
-        public async Task<IEnumerable<Concorrente>> GetConcorrentes(OrderByEnum orderBy)
+        public async Task<IEnumerable<ConcorrenteGetResponse>> GetConcorrentes(OrderByEnum orderBy)
         {
-            if (orderBy == OrderByEnum.Id)
-            {
-                return await repo.GetConcorrentes();
-            }
-            return (await repo.GetConcorrentes()).OrderBy(x => x.Nome);
+            return (await repo.GetConcorrentes(includeFiliais: true))
+                                .OrderBy(x => orderBy == OrderByEnum.Description ? x.Nome : null)
+                                .Select(c => new ConcorrenteGetResponse
+                                {
+                                    Id = c.Id,
+                                    Nome = c.Nome,
+                                    Filiais = c.Filiais.Select(f => f.Cnpj).ToList()
+                                });
         }
 
 

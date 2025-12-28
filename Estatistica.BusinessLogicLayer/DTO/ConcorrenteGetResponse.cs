@@ -1,10 +1,9 @@
 ﻿namespace Estatistica.BusinessLogicLayer.DTO;
 
-public record ConcorrenteGetResponse(int Id,string? Nome)
+public class ConcorrenteGetResponse()
 {
-    public ConcorrenteGetResponse() : this(default, default)
-    {
-        
-    }
+    public int Id { get; set; }
+    public string? Nome { get; set; }
+    public List<string> Filiais { get; set; }
 }
 
