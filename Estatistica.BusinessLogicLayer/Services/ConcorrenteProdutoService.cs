@@ -30,6 +30,16 @@ namespace Estatistica.BusinessLogicLayer.Services
             this.usuarioService=usuarioService;
         }
 
+        public async Task<List<DashboardDto.DashboardProductsCountByConcorrente>> GetTop10ProductsCount()
+        {            
+            return (await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTracking(x => true))?
+                .GroupBy(x => x.Concorrente.Nome)
+                .Select(g => new DashboardDto.DashboardProductsCountByConcorrente { Concorrente = g.Key, Count = g.Count() })
+                .OrderByDescending(X => X.Count)
+                .Take(10)
+                .ToList() ?? new List<DashboardDto.DashboardProductsCountByConcorrente>();            
+        }
+
         public async Task<int> GetTotalCount()
         {
             return (await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTracking(x => true)).Count();

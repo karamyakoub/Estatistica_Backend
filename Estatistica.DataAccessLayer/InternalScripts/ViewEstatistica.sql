@@ -1,4 +1,4 @@
-﻿CREATE VIEW
+﻿CREATE OR ALTER VIEW
      VW_Estatistica AS
 select
      tbl.Id,

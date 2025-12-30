@@ -13,5 +13,6 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
         Task<bool> LinkProduct(string CodigoProdutoConcorrente, string idProduto);
         Task<bool> UnLinkProduct(string CodigoProdutoConcorrente);
         Task<int> GetTotalCount();
+        Task<List<DashboardDto.DashboardProductsCountByConcorrente>> GetTop10ProductsCount();
     }
 }
