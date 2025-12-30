@@ -25,6 +25,11 @@ namespace Estatistica.DataAccessLayer.Repositories
             return frete;
         }
 
+        public async Task<Frete?> GetFreteByCodigoMunicipio(string codigoMunicipio)
+        {
+            return await context.Fretes.FirstOrDefaultAsync(f => f.CodMunicipio == codigoMunicipio);
+        }
+
         public async Task<Frete?> GetFreteById(int id)
         {
             var frete = await context.Fretes.FirstOrDefaultAsync(f => f.Id == id);

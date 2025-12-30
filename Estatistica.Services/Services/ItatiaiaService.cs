@@ -24,17 +24,17 @@ namespace Estatistica.Services.Services
         }
         public async Task ExecuteAsync()
         {
+            await Task.Delay(1 * 60 * 60 * 1000);
             Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
             while (true)
             {
-                await Task.Delay(1 * 60 * 60 * 1000);
                 try
                 {
                     //Get Product Prices from Itatiaia
                     var dtProductsPrices = readProductsPriceItatiaia();
                     if (dtProductsPrices is null)
                         throw new Exception("Erro ao ler os preços dos produtos da Itatiaia.");
-                    await saveProductsPrice(dtProductsPrices!);
+                    //await saveProductsPrice(dtProductsPrices!);
 
 
 
@@ -72,14 +72,34 @@ namespace Estatistica.Services.Services
 
         }
 
-        private async Task saveFretes(dynamic dtJoin)
+        private async Task saveFretes(IEnumerable<dynamic> dtJoin)
         {
-            foreach (var row in dtJoin)
+            var lsJoinParsed = dtJoin.Select(x =>
+            {
+                decimal.TryParse(x.PercFrete, out decimal percFrete);
+                return new
+                {
+                    x.CodSetor,
+                    x.CodMuni,
+                    x.CodMuniIbeg,
+                    PercFrete = percFrete,
+                };
+            })
+            .Where(x => x.PercFrete > 0).ToList();
+            var lsFretes = lsJoinParsed
+            .GroupBy(x => x.CodMuniIbeg)
+            .Select(x => new
+            {
+                x.First(y => y.CodMuniIbeg == x.Key).CodSetor,
+                x.First(y => y.CodMuniIbeg == x.Key).CodMuni,
+                CodMuniIbeg = x.Key,
+                PercFrete = Math.Round(x.Where(y => y.CodMuniIbeg == x.Key).Average(z => z.PercFrete), 2),
+            });
+            foreach (var item in lsFretes)
             {
                 try
                 {
-                    decimal.TryParse(row.PercFrete, out decimal percFrete);
-                    await freteService.AddUpdateFrete(row.CodSetor, row.CodMuniIbeg, percFrete);
+                    await freteService.AddUpdateFrete(item.CodSetor, item.CodMuniIbeg, item.PercFrete);
                 }
                 catch
                 {

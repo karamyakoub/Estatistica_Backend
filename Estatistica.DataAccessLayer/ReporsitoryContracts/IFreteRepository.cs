@@ -13,5 +13,6 @@ namespace Estatistica.DataAccessLayer.ReporsitoryContracts
         Task<Frete> UpdateFrete(Frete frete);
         Task<Frete?> GetFreteById(int id);
         Task<Frete?> GetFreteBySetorAndCodigoMunicipio(string setor, string codigoMunicipio);
+        Task<Frete?> GetFreteByCodigoMunicipio(string codigoMunicipio);
     }
 }

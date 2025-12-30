@@ -45,6 +45,7 @@ namespace Estatistica.BusinessLogicLayer.DTO
         public decimal? PvendaTotalDesconto { get; set; }        
         public decimal? PvendaComFreteDesconto { get; set; }
         public decimal? PvendaTotalComFreteDesconto { get; set; }
+        public decimal? PercDescontoValorUniConcPvendaUni { get; set; }
 
         public void SetDiscount(decimal discountPercentage)
         {
@@ -58,13 +59,14 @@ namespace Estatistica.BusinessLogicLayer.DTO
                 //Calculate with discount
                 PvendaDesconto = Math.Round(Pvenda.Value * discountFactor, 2);
                 if(Qtde.HasValue)
-                PvendaTotalDesconto = Math.Round((Pvenda.Value * discountFactor) * (decimal)Qtde, 2);
+                    PvendaTotalDesconto = Math.Round((Pvenda.Value * discountFactor) * (decimal)Qtde, 2);
                 if (PvendaDesconto.HasValue)
                     PvendaComFreteDesconto = Math.Round(PvendaDesconto.Value + ((PvendaDesconto.Value * (PercFrete ?? 0)) / 100), 2);
+                if (PvendaComFreteDesconto.HasValue && ConcorrenteProdutoValorCorregido.HasValue)
+                    PercDescontoValorUniConcPvendaUni = Math.Round(((PvendaComFreteDesconto.Value / ConcorrenteProdutoValorCorregido.Value) -1) * 100, 2);
                 if (PvendaDesconto.HasValue && Qtde.HasValue)
-                {
-                    PvendaTotalComFreteDesconto = Math.Round((PvendaDesconto.Value + ((PvendaDesconto.Value * (PercFrete ?? 0)) / 100)) * (decimal)Qtde, 2);
-                }                                
+                    PvendaTotalComFreteDesconto = Math.Round((PvendaDesconto.Value + ((PvendaDesconto.Value * (PercFrete ?? 0)) / 100)) * (decimal)Qtde, 2);                    
+                
             }
             
         }

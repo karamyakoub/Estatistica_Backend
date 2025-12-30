@@ -19,7 +19,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
         public async Task AddUpdateFrete(string setor, string codigoMunicipio, decimal percentualFrete)
         {
-            var frete = await freteRepository.GetFreteBySetorAndCodigoMunicipio(setor, codigoMunicipio);
+            var frete = await freteRepository.GetFreteByCodigoMunicipio(codigoMunicipio);
             if(frete is null)
             {
                 frete = new Frete
@@ -32,6 +32,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             }
             else
             {
+                frete.Setor = setor;
                 frete.PercentualFrete = percentualFrete;
                 await freteRepository.UpdateFrete(frete);
             }

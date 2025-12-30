@@ -46,12 +46,12 @@ namespace Estatistica.Services
         public void Run()
         {
 
-            var carregaProdutosHostedService = serviceProvider.GetRequiredService<CarregaProdutosHostedService>();
-            tasks.Add(carregaProdutosHostedService.ExecuteAsync());
+            //var carregaProdutosHostedService = serviceProvider.GetRequiredService<CarregaProdutosHostedService>();
+            //tasks.Add(carregaProdutosHostedService.ExecuteAsync());
             var itatiaiaService = serviceProvider.GetRequiredService<ItatiaiaService>();
             tasks.Add(itatiaiaService.ExecuteAsync());
-            var planilhaProcessingService = serviceProvider.GetRequiredService<PlanilhaProcessingService>();
-            tasks.Add(planilhaProcessingService.ExecuteAsync());
+            //var planilhaProcessingService = serviceProvider.GetRequiredService<PlanilhaProcessingService>();
+            //tasks.Add(planilhaProcessingService.ExecuteAsync());
 
             Task.WaitAll(tasks.ToArray());
         }
