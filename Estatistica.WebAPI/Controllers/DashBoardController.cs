@@ -5,6 +5,7 @@ using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Estatistica.WebAPI.Controllers
 {
@@ -18,24 +19,34 @@ namespace Estatistica.WebAPI.Controllers
         private readonly IConcorrenteProdutoService concorrenteProdutoService;
         private readonly IConcorrenteProdutoRepository concorrenteProdutoRepository;
         private readonly INfcRespository nfcRespository;
+        private readonly IMemoryCache memoryCache;
+        private const string DashboardCacheKey = "DashboardData";
 
         public DashBoardController(IUsuarioService usuarioService,
             IConcorrenteService concorrenteService,
             IConcorrenteProdutoService concorrenteProdutoService,
             IConcorrenteProdutoRepository concorrenteProdutoRepository,
-            INfcRespository nfcRespository)
+            INfcRespository nfcRespository,
+            IMemoryCache memoryCache)
         {
             this.usuarioService=usuarioService;
             this.concorrenteService=concorrenteService;
             this.concorrenteProdutoService=concorrenteProdutoService;
             this.concorrenteProdutoRepository=concorrenteProdutoRepository;
             this.nfcRespository=nfcRespository;
+            this.memoryCache = memoryCache;
         }
         [HttpGet("data")]
         public async Task<IActionResult> GetDashboardData()
-        {            
+        {
+            object? dashboardData;
+
+            memoryCache.TryGetValue(DashboardCacheKey, out dashboardData);
+            if (dashboardData is not null)
+                return Ok(dashboardData);
+
             //var limitDate = DateTime.Today.AddMonths(-9);
-            var dashboardData = new DashboardDto
+            dashboardData = new DashboardDto
             {                                
                 TotalUsers = (await usuarioService.GetUsuarios()).Count(),
                 TotalConcorrentes = (await concorrenteService.GetConcorrentes(OrderByEnum.Id)).Count(),
@@ -65,6 +76,9 @@ namespace Estatistica.WebAPI.Controllers
                 //    .Take(10)
                 //    .ToList()
             };
+
+            var cacheOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromHours(1));
+            memoryCache.Set(DashboardCacheKey, dashboardData, cacheOptions);
             return Ok(dashboardData);
         }
     }

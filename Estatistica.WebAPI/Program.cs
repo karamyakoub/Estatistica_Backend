@@ -21,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuditingSaveChangesInterceptorService>();
+builder.Services.AddMemoryCache();
 
 //Add DbContext
 var connString = string.Empty;
