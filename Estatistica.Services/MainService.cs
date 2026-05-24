@@ -5,20 +5,16 @@ using Estatistica.Services.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Estatistica.Services
 {
     internal class MainService
     {
         private readonly ServiceCollection serviceContainer = new ServiceCollection();
-        private ServiceProvider serviceProvider;
+        private readonly ServiceProvider serviceProvider;
         private readonly List<Task> tasks = new List<Task>();
+
         internal MainService()
         {
             var env = ConfigurationManager.AppSettings["ENV"] ?? "TEST";
@@ -35,28 +31,35 @@ namespace Estatistica.Services
                 options.Password.RequireDigit = false;
             }).AddRoles<IdentityRole>()
               .AddEntityFrameworkStores<ApplicationDbContext>();
-            serviceContainer.AddSingleton<CarregaProdutosHostedService>();
-            serviceContainer.AddSingleton<ItatiaiaService>();
+            serviceContainer.AddScoped<CarregaProdutosHostedService>();
+            serviceContainer.AddScoped<ItatiaiaService>();
             serviceContainer.AddSingleton<PlanilhaProcessingService>();
             serviceProvider = serviceContainer.BuildServiceProvider();
         }
 
-
-
         public void Run()
         {
+            tasks.Add(Task.Run(async () =>
+            {
+                using var scope = serviceProvider.CreateScope();
+                var svc = scope.ServiceProvider.GetRequiredService<CarregaProdutosHostedService>();
+                await svc.ExecuteAsync();
+            }));
 
-            //var carregaProdutosHostedService = serviceProvider.GetRequiredService<CarregaProdutosHostedService>();
-            //tasks.Add(carregaProdutosHostedService.ExecuteAsync());
-            var itatiaiaService = serviceProvider.GetRequiredService<ItatiaiaService>();
-            tasks.Add(itatiaiaService.ExecuteAsync());
-            //var planilhaProcessingService = serviceProvider.GetRequiredService<PlanilhaProcessingService>();
-            //tasks.Add(planilhaProcessingService.ExecuteAsync());
+            tasks.Add(Task.Run(async () =>
+            {
+                using var scope = serviceProvider.CreateScope();
+                var svc = scope.ServiceProvider.GetRequiredService<ItatiaiaService>();
+                await svc.ExecuteAsync();
+            }));
+
+            tasks.Add(Task.Run(async () =>
+            {
+                var svc = serviceProvider.GetRequiredService<PlanilhaProcessingService>();
+                await svc.ExecuteAsync();
+            }));
 
             Task.WaitAll(tasks.ToArray());
         }
     }
-
-
-
 }
