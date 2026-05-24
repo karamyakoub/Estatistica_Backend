@@ -103,6 +103,6 @@ from
                INNER JOIN concorrentefilials confil ON confil.cnpj = nfcs.ConcorrenteCnpjCnpj
                INNER JOIN concorrentes con ON con.conId = confil.ConcorrenteId
                INNER JOIN concorrenteprodutos conprod ON conprod.id = nfis.ConcorrenteProdutoId
-               INNER JOIN produtos prod ON prod.codProd = conprod.ProdutoCodigoProduto
+               LEFT JOIN produtos prod ON prod.codProd = conprod.ProdutoCodigoProduto
                LEFT JOIN fretes ON nfis.codMuni = fretes.CodMuni
      ) as tbl order by tbl.ConcorrenteNome,tbl.ChaveNfe,tbl.DataEmissao,tbl.CodigoProduto;
