@@ -6,6 +6,7 @@ namespace Estatistica.BusinessLogicLayer.ServiceContracts
     {
         Task<IEnumerable<SearchProductPriceResponse>> SearchProductPrice(string dateTime, List<int> idConcorrente, string textSearch);
         Task<bool> UpdateNfiCorrectionCount(string id, int correctionCount);
-        Task<IEnumerable<StatistcDTO>> GetStatisticResult(List<int>? concorrenteId, DateTime? dtEmissaoIni, DateTime? dtEmissaoFin, decimal? desconto,string? fabricante);
+        Task<IEnumerable<StatistcDTO>> GetStatisticResult(List<int>? concorrenteId, DateTime? dtEmissaoIni, DateTime? dtEmissaoFin, decimal? desconto, string? fabricante);
+        Task<List<StatistcDTO>> GetStatisticResultByNfcKey(string key, decimal discount = 0);
     }
 }

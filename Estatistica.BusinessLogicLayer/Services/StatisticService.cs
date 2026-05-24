@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+
 using Estatistica.BusinessLogicLayer.DTO;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.DataAccessLayer.Context;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 
 using Microsoft.EntityFrameworkCore;
+
 using MySql.Data.MySqlClient;
+
 using System.Data;
 using System.Globalization;
 
@@ -19,14 +22,14 @@ namespace Estatistica.BusinessLogicLayer.Services
 
         public StatisticService(ApplicationDbContext context, INfiRespository nfiRespository, IMapper mapper)
         {
-            this.context=context;
-            this.nfiRespository=nfiRespository;
-            this.mapper=mapper;
+            this.context = context;
+            this.nfiRespository = nfiRespository;
+            this.mapper = mapper;
         }
 
         public async Task<IEnumerable<StatistcDTO>> GetStatisticResult(List<int>? concorrenteId, DateTime? dtEmissaoIni, DateTime? dtEmissaoFin, decimal? desconto, string? fabricante)
         {
-            var query = context.vW_Estatisticas.AsQueryable();
+            var query = context.vW_Estatisticas.Where(x => x.CodigoProduto != null).AsQueryable();
 
             if (concorrenteId != null && concorrenteId.Any())
             {
@@ -56,9 +59,18 @@ namespace Estatistica.BusinessLogicLayer.Services
             {
                 resultDto[i].SetDiscount(desconto ?? 0);
             }
-            
-                
 
+
+
+            return resultDto;
+        }
+
+        public async Task<List<StatistcDTO>> GetStatisticResultByNfcKey(string key, decimal discount = 0)
+        {
+            var result = await context.vW_Estatisticas.Where(x => x.ChaveNfe != null && x.ChaveNfe.Equals(key)).OrderBy(x => x.ConcorrenteProdutoCodigo).ToListAsync();
+            var resultDto = mapper.Map<IEnumerable<StatistcDTO>>(result).ToList();
+            foreach (var item in resultDto)
+                item.SetDiscount(discount);
             return resultDto;
         }
 
