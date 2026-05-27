@@ -249,9 +249,9 @@ namespace Estatistica.BusinessLogicLayer.Services
 
                 int qtde = int.TryParse(qtdeStr?.Split('.')[0], out var q) ? q : 0;
                 decimal valor = decimal.TryParse(valorStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
-
+                var id = $"{concorrente.Id}{codigo}";
                 // Buscar produto correspondente
-                var concorrenteProduto = concorrenteProdutos.FirstOrDefault(p => p.CodigoProdutoConcorrente == codigo);
+                var concorrenteProduto = await concorrenteProdutoRepository.GetConcorrenteProdutosByProdutoId(id);
 
                 if (concorrenteProduto == null)
                 {
