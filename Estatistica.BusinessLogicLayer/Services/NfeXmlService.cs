@@ -275,7 +275,22 @@ namespace Estatistica.BusinessLogicLayer.Services
                 //check if not exists 
                 var nfiDb = (await nfiRespository.GetNfisByCondition(x => x.Id == nfi.Id)).FirstOrDefault();
                 if (nfiDb is null)
+                {
                     itensNota.Add(nfi);
+                }
+                else
+                {
+                    //Update
+                    nfiDb.Qtde = qtde;
+                    nfiDb.Valor = valor;
+                    nfiDb.UfOrigin = ufOrigem;
+                    nfiDb.UfDestino = ufDestino;
+                    nfiDb.CodMunicipio = codMunicipioCliente;
+                    nfiDb.CodigoBarra = string.IsNullOrWhiteSpace(codBarra) ? null : codBarra;
+                    nfiDb.Unidade = string.IsNullOrWhiteSpace(unidade) ? null : unidade;
+
+                    await nfiRespository.UpdateNfi(nfi);
+                }
             }
 
             return itensNota;
