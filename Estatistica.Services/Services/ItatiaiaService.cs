@@ -25,7 +25,7 @@ namespace Estatistica.Services.Services
         public async Task ExecuteAsync()
         {
             Console.WriteLine($"Serviço Itatiaia Aguardando inciou e está aguardando 1 hora para começar o processamento, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
-            await Task.Delay(1 * 60 * 60 * 1000);
+            //await Task.Delay(1 * 60 * 60 * 1000);
             Console.WriteLine($"Serviço Itatiaia Iniciado, {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
             while (true)
             {

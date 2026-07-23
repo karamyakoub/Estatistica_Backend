@@ -245,7 +245,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                 var unidade = prodNode.SelectSingleNode("nfe:uCom", ns)?.InnerText;
                 var codBarra = prodNode.SelectSingleNode("nfe:cEAN", ns)?.InnerText;
                 var qtdeStr = prodNode.SelectSingleNode("nfe:qCom", ns)?.InnerText;
-                var valorStr = prodNode.SelectSingleNode("nfe:vProd", ns)?.InnerText;
+                var valorStr = prodNode.SelectSingleNode("nfe:vUnCom", ns)?.InnerText;
 
                 int qtde = int.TryParse(qtdeStr?.Split('.')[0], out var q) ? q : 0;
                 decimal valor = decimal.TryParse(valorStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;

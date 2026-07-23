@@ -65,11 +65,11 @@ from
                     AND coalesce(prod.pvenda, 0) >= nfis.valor THEN round(nfis.valor * nfis.qtdeCorrecao, 2)
                     WHEN nfis.valor > 2 * coalesce(prod.pvenda, 0)
                     AND coalesce(prod.pvenda, 0) > 0 THEN round(
-                         ceiling(nfis.valor / coalesce(prod.pvenda, 0)) * nfis.valor,
+                         ceiling(coalesce(prod.pvenda, 0) / nfis.valor) * nfis.valor,
                          2
                     )
                     WHEN coalesce(prod.pvenda, 0) > 2 * nfis.valor THEN round(
-                         ceiling(coalesce(prod.pvenda, 0) / nfis.valor) * nfis.valor,
+                         ceiling(nfis.valor / coalesce(prod.pvenda, 0)) * nfis.valor,
                          2
                     )
                     ELSE nfis.valor
