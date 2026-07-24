@@ -1,13 +1,11 @@
 ﻿
 using Estatistica.BusinessLogicLayer.Data;
 using Estatistica.BusinessLogicLayer.ServiceContracts;
-using Estatistica.BusinessLogicLayer.Services;
+using Estatistica.DataAccessLayer.Entities;
 using Newtonsoft.Json;
-using System;
 using System.Configuration;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 
 namespace Estatistica.Services.Services
 {
@@ -15,7 +13,7 @@ namespace Estatistica.Services.Services
     {
         private readonly string userName, password, url, authInfo;
         private readonly IProdutoService produtoService;
-        private int totalPages = 0;
+        private bool lastPage;
         public CarregaProdutosHostedService(IProdutoService produtoService)
         {
 
@@ -25,31 +23,39 @@ namespace Estatistica.Services.Services
             authInfo = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{userName}:{password}"));
             this.produtoService=produtoService;
         }
-        public async Task ExecuteAsync()
-        {
-
-            while (true)
+        public async Task ExecuteAsync(CancellationToken cancellationToken)
+        {            
+            while (!cancellationToken.IsCancellationRequested)
             {
+                Console.WriteLine($"{nameof(CarregaProdutosHostedService)} - Carregando os produtos");
+                lastPage = false;
+                int pagina = 0;
 
-                await getProdutos(1, true);
-                for (int i = 1; i <= totalPages; i++)
+                while (!lastPage)
                 {
-                    await saveProdutos(i);
+                    pagina++;                    
+                    await saveProdutos(pagina);                    
+                    if (pagina > 2000)
+                        lastPage = true;
                 }
 
+                Console.WriteLine($"{nameof(CarregaProdutosHostedService)} - Produtos carregados com sucesso\nQuantidade de paginas: {pagina}");
                 await Task.Delay(22 * 60 * 60  * 1000);
             }
         }
-        private async Task saveProdutos(int pageCount)
+        private async Task saveProdutos(int pagina)
         {
 
-            var produtosToAdd = new List<Produto>();
-            var produtosToUpdate = new List<Produto>();
-            var produtos = await getProdutos(pageCount, false);
+            var produtosToAdd = new List<ProdutoConsulta.Content>();
+            var produtosToUpdate = new List<ProdutoConsulta.Content>();
+            var produtos = await getProdutos(pagina);
             if (produtos is not null)
             {
                 foreach (var produto in produtos)
                 {
+                    if (produto is null || produto.cod == 0)
+                        continue;
+
                     var exists = await produtoService.CheckProductExists(Convert.ToString(produto.cod));
                     if (exists)
                         produtosToUpdate.Add(produto);
@@ -72,27 +78,19 @@ namespace Estatistica.Services.Services
 
         }
 
-        private async Task<IEnumerable<Produto>?> getProdutos(int pagina, bool setTotalPageCount)
+        private async Task<List<ProdutoConsulta.Content>?> getProdutos(int pagina)
         {
             try
             {
                 using (var client = new HttpClient())
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authInfo);
-                    var uri = new Uri(url);
-                    var body = JsonConvert.SerializeObject(new
-                    {
-                        getfoto = "N",
-                        getficha = "N",
-                        pagina = pagina
-
-                    });
-                    var content = new StringContent(body, Encoding.UTF8, "application/json");
-                    var response = await client.PostAsync(uri, content);
-                    var retorno = JsonConvert.DeserializeObject<ProdutoApiConsulta>(await response.Content.ReadAsStringAsync());
-                    if (setTotalPageCount)
-                        totalPages = retorno?.retorno?.paginacao?.totalPaginas ?? 0;
-                    return retorno?.retorno.produtos;
+                    var uri = new Uri($"{url}?perfil=1&pagina={pagina}");
+                    
+                    var response = await client.GetAsync(uri);                    
+                    var retorno = JsonConvert.DeserializeObject<ProdutoConsulta>(await response.Content.ReadAsStringAsync());
+                    lastPage = retorno?.lastPage ?? false;
+                    return retorno?.content;
 
                 }
             }
