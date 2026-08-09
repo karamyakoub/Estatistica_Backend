@@ -12,7 +12,7 @@ public class ProdutoConsultaToProdutoMappingProfile : Profile
             .ForMember(dest => dest.CodigoProduto,
                 opt => opt.MapFrom(src => src.cod.ToString()))
             .ForMember(dest => dest.Descricao,
-                opt => opt.MapFrom(src => src.descricaoCurta ?? string.Empty))
+                opt => opt.MapFrom(src => src.desc ?? string.Empty))
             .ForMember(dest => dest.CodigoBarra,
                 opt => opt.MapFrom(src => src.codBarras ?? string.Empty))
             .ForMember(dest => dest.CodigoFabrica,
