@@ -69,7 +69,7 @@ namespace Estatistica.DataAccessLayer.Repositories
                                                                 FROM estatistica.produtos
                                                                 WHERE MATCH(descricao) AGAINST (@description)
                                                                 ORDER BY MATCH(descricao) AGAINST (@description) DESC
-                                                                LIMIT 100",param).ToList();
+                                                                LIMIT 10000",param).ToList();
 
 
                 return suggestionList;
