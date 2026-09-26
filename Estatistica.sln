@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11505.172 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.DataAccessLayer", "Estatistica.DataAccessLayer\Estatistica.DataAccessLayer.csproj", "{28D45AD9-BE33-4DDA-A03B-DADD3219BE8B}"
 EndProject
@@ -12,6 +12,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatitica.PriceService", "Estatitica.PriceService\Estatitica.PriceService.csproj", "{689AC1B8-DE23-4082-B56B-B3879B1EF89D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estatistica.Services", "Estatistica.Services\Estatistica.Services.csproj", "{6C50016D-D540-4522-96CC-23AECE60D2F3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{D20B45E7-DBEE-4089-9A53-4B74E866104E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{B7C31EE7-DE24-4A56-9386-B19A32EE8B72}"
+	ProjectSection(SolutionItems) = preProject
+		deploy.yml = deploy.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +49,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B7C31EE7-DE24-4A56-9386-B19A32EE8B72} = {D20B45E7-DBEE-4089-9A53-4B74E866104E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DD9FE1E9-DBE2-4629-992C-0C9C857F5367}
