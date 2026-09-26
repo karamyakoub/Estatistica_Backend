@@ -3,9 +3,8 @@ name: Deploy Connection Test
 on:
   push:
     branches:
+      - dev
       - master
-      - develop
-      - main
 
 jobs:
   test-ssh:
