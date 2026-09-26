@@ -78,33 +78,93 @@ namespace Estatistica.BusinessLogicLayer.Services
         {
             DateTime.TryParseExact(dateTime, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateFilter);
             var lista = await context.Nfis
-                        .Include(nfi => nfi.ConcorrenteProduto)
-                            .ThenInclude(cp => cp.Concorrente)
-                        .Include(nfi => nfi.ConcorrenteProduto)
-                            .ThenInclude(cp => cp.Produto)
-                        .Include(nfi => nfi.Nfc)
-                        .Where(nfi =>
-                            nfi.Nfc.DataEmissao >= dateFilter &&
-                            (idConcorrente.Count > 0 ? idConcorrente.Contains(nfi.ConcorrenteProduto.Concorrente.Id) : true) &&
-                            (!string.IsNullOrWhiteSpace(textSearch) &&
-                             nfi.ConcorrenteProduto.Produto != null &&
-                             nfi.ConcorrenteProduto.Produto.CodigoProduto == textSearch.Trim())
-                        )
-                        .Select(nfi => new SearchProductPriceResponse
-                        {
-                            Id = nfi.Id,
-                            CodigoProdutoConcorrente = nfi.ConcorrenteProduto.CodigoProdutoConcorrente,
-                            DescricaoProdutoConcorrente = nfi.ConcorrenteProduto.DescricaoProdutoConcorrente,
-                            CodigoProduto = nfi.ConcorrenteProduto.Produto != null ? nfi.ConcorrenteProduto.Produto.CodigoProduto : null,
-                            DescricaoProduto = nfi.ConcorrenteProduto.Produto != null ? nfi.ConcorrenteProduto.Produto.Descricao : null,
-                            Fabricante = nfi.ConcorrenteProduto.Produto != null ? nfi.ConcorrenteProduto.Produto.Fabricante : null,
-                            Concorrente = nfi.ConcorrenteProduto.Concorrente.Nome,
-                            Qtd = nfi.Qtde,
-                            Unidade = nfi.Unidade,
-                            DataEmissao = nfi.Nfc.DataEmissao.HasValue ? nfi.Nfc.DataEmissao.Value.ToString("dd/MM/yyyy") : null,
-                            Valor = nfi.Valor
-                        })
-                        .ToListAsync();
+                            .Include(nfi => nfi.ConcorrenteProduto)
+                                .ThenInclude(cp => cp.Concorrente)
+                            .Include(nfi => nfi.ConcorrenteProduto)
+                                .ThenInclude(cp => cp.Produto)
+                            .Include(nfi => nfi.Nfc)
+
+                            // LEFT JOIN Produtos
+                            .GroupJoin(
+                                context.Produtos,
+                                nfi => nfi.ConcorrenteProduto.Produto == null
+                                    ? null
+                                    : nfi.ConcorrenteProduto.Produto.CodigoProduto,
+                                p => p.CodigoProduto,
+                                (nfi, produtos) => new { nfi, produtos }
+                            )
+                            .SelectMany(
+                                x => x.produtos.DefaultIfEmpty(),
+                                (x, p) => new { x.nfi, p }
+                            )
+
+                            // LEFT JOIN Fretes
+                            .GroupJoin(
+                                context.Fretes,
+                                np => np.nfi.CodMunicipio,
+                                f => f.CodMunicipio,
+                                (np, fretes) => new { np.nfi, np.p, fretes }
+                            )
+                            .SelectMany(
+                                x => x.fretes.DefaultIfEmpty(),
+                                (x, f) => new { x.nfi, x.p, f }
+                            )
+
+                            .Where(g =>
+                                g.nfi.Nfc.DataEmissao >= dateFilter &&
+                                (
+                                    idConcorrente.Count > 0
+                                        ? idConcorrente.Contains(g.nfi.ConcorrenteProduto.Concorrente.Id)
+                                        : true
+                                ) &&
+                                (
+                                    !string.IsNullOrWhiteSpace(textSearch) &&
+                                    g.nfi.ConcorrenteProduto.Produto != null &&
+                                    g.nfi.ConcorrenteProduto.Produto.CodigoProduto == textSearch.Trim()
+                                )
+                            )
+                            .Select(g => new SearchProductPriceResponse
+                            {
+                                Id = g.nfi.Id,
+                                CodigoProdutoConcorrente =
+                                    g.nfi.ConcorrenteProduto.CodigoProdutoConcorrente,
+
+                                DescricaoProdutoConcorrente =
+                                    g.nfi.ConcorrenteProduto.DescricaoProdutoConcorrente,
+
+                                CodigoProduto =
+                                    g.nfi.ConcorrenteProduto.Produto != null
+                                        ? g.nfi.ConcorrenteProduto.Produto.CodigoProduto
+                                        : null,
+
+                                DescricaoProduto =
+                                    g.nfi.ConcorrenteProduto.Produto != null
+                                        ? g.nfi.ConcorrenteProduto.Produto.Descricao
+                                        : null,
+
+                                Fabricante =
+                                    g.nfi.ConcorrenteProduto.Produto != null
+                                        ? g.nfi.ConcorrenteProduto.Produto.Fabricante
+                                        : null,
+
+                                Concorrente = g.nfi.ConcorrenteProduto.Concorrente.Nome,
+
+                                Qtd = g.nfi.Qtde,
+                                Unidade = g.nfi.Unidade,
+
+                                DataEmissao =
+                                    g.nfi.Nfc.DataEmissao.HasValue
+                                        ? g.nfi.Nfc.DataEmissao.Value.ToString("dd/MM/yyyy")
+                                        : null,
+
+                                Valor = g.nfi.Valor,
+
+                                ValorInterno = g.p != null
+                                    ? g.p.PrecoVenda
+                                    : null,
+                                PercentualFrete= g.f != null ? g.f.PercentualFrete : null
+                            })
+                            .ToListAsync();
             return lista;
         }
 

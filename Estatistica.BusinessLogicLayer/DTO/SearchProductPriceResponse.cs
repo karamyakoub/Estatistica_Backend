@@ -20,6 +20,25 @@ namespace Estatistica.BusinessLogicLayer.DTO
         public string? DataEmissao { get; set; }
         public int? Qtd { get; set; }
         public decimal? Valor { get; set; }
+        public decimal? ValorInterno { get; set; }
+        public decimal? PercentualFrete { get; set; }
+        public decimal? ValorInternoFrete
+        {
+            get
+            {
+                if (ValorInterno.HasValue)
+                {
+                    if (PercentualFrete.HasValue)
+                        return Math.Round(ValorInterno.Value + ValorInterno.Value * PercentualFrete.Value, 2);
+                    else
+                        return ValorInterno.Value;
+
+                }
+                return null;
+            }
+
+        }
+        public decimal? Desconto => ValorInternoFrete.HasValue && Valor.HasValue ? Math.Round(((ValorInternoFrete.Value / Valor.Value) -1) * 100, 2) : null;
 
     }
 }

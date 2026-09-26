@@ -63,7 +63,7 @@ namespace Estatistica.WebAPI.Controllers
         public async Task<IActionResult> SearchProduct([FromQuery] string? dateTime, [FromQuery] string? idConcorrente, [FromQuery] string? textSearch)
         {
             var concoreentesIds = string.IsNullOrWhiteSpace(idConcorrente) ? null : idConcorrente.Split(",").Select(x => int.Parse(x)).ToList();
-            return Ok(await statitsticService.SearchProductPrice(dateTime, concoreentesIds ?? new List<int>(), textSearch));
+            return Ok(await statitsticService.SearchProductPrice(dateTime ?? string.Empty, concoreentesIds ?? new List<int>(), textSearch ?? string.Empty));
         }
 
         [Authorize(Roles = "Admin")]
