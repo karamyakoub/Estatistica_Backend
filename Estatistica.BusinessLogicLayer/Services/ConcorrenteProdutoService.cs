@@ -106,7 +106,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                                           ConcorrenteProduto = cp,
                                           UltimaDataInclusao = nfi != null
                                               ? nfi.UltimaDataInclusao
-                                              : (DateTime?)null
+                                              : cp.DataCadastro
                                       };
 
 
