@@ -31,6 +31,7 @@ namespace Estatistica.BusinessLogicLayer.DTO
         public string? Familia { get; set; }                
         public string? Unidade { get; set; }
         public  string? TipoVinculo { get; set; }
+        public DateOnly? UltimaDataInclusao { get; set; }
 
     }
 }

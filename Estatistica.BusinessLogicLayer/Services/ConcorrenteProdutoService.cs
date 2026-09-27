@@ -15,12 +15,14 @@ namespace Estatistica.BusinessLogicLayer.Services
         private readonly IUsuarioRepository usuarioRepository;
         private readonly ILogConcorrenteProdutoRepository logConcorrenteProdutoRepository;
         private readonly IUsuarioService usuarioService;
+        private readonly INfiRespository nfiRespository;
 
         public ConcorrenteProdutoService(IConcorrenteProdutoRepository concorrenteProdutoRepository, IMapper mapper,
             IProdutoRepository produtoRepository,
             IUsuarioRepository usuarioRepository,
             ILogConcorrenteProdutoRepository logConcorrenteProdutoRepository,
-            IUsuarioService usuarioService)
+            IUsuarioService usuarioService,
+            INfiRespository nfiRespository)
         {
             this.concorrenteProdutoRepository=concorrenteProdutoRepository;
             this.mapper=mapper;
@@ -28,6 +30,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             this.usuarioRepository=usuarioRepository;
             this.logConcorrenteProdutoRepository=logConcorrenteProdutoRepository;
             this.usuarioService=usuarioService;
+            this.nfiRespository=nfiRespository;
         }
 
         public async Task<List<DashboardDto.DashboardProductsCountByConcorrente>> GetTop10ProductsCount()
@@ -81,6 +84,15 @@ namespace Estatistica.BusinessLogicLayer.Services
                 );
             var users = await usuarioRepository.GetUsersByCondition(x => true);
             var productList = mapper.Map<IEnumerable<ConcorrenteProdutoSearchDto>>(concorrenteProdutos);
+
+            foreach(var produto in productList)
+            {
+                var data = (await nfiRespository.GetNfisByConditionNoTracking(x => x.ConcorrenteProduto.Id == produto.Id))
+                     .OrderByDescending(x => x.DataCadastro).FirstOrDefault()?.DataCadastro;
+                if(data.HasValue)
+                    produto.UltimaDataInclusao = DateOnly.FromDateTime(data.Value);
+            }                            
+
             var prodList = from p in productList
                            join u in users
                            on p.UsuarioCadastro equals u.Id into grp
