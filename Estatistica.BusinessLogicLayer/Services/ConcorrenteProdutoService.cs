@@ -4,6 +4,7 @@ using Estatistica.BusinessLogicLayer.ServiceContracts;
 using Estatistica.DataAccessLayer.Entities;
 using Estatistica.DataAccessLayer.ReporsitoryContracts;
 using Estatistica.DataAccessLayer.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Estatistica.BusinessLogicLayer.Services
 {
@@ -34,13 +35,13 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
 
         public async Task<List<DashboardDto.DashboardProductsCountByConcorrente>> GetTop10ProductsCount()
-        {            
+        {
             return (await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTracking(x => true))?
                 .GroupBy(x => x.Concorrente.Nome)
                 .Select(g => new DashboardDto.DashboardProductsCountByConcorrente { Concorrente = g.Key, Count = g.Count() })
                 .OrderByDescending(X => X.Count)
                 .Take(10)
-                .ToList() ?? new List<DashboardDto.DashboardProductsCountByConcorrente>();            
+                .ToList() ?? new List<DashboardDto.DashboardProductsCountByConcorrente>();
         }
 
         public async Task<int> GetTotalCount()
@@ -49,7 +50,7 @@ namespace Estatistica.BusinessLogicLayer.Services
         }
 
         public async Task<bool> LinkProduct(string CodigoProdutoConcorrente, string idProduto)
-        {            
+        {
             var produto = await produtoRepository.GetProductByCodigo(idProduto);
             if (produto is null) throw new ArgumentNullException("Produto nao encontrado");
             var result = await concorrenteProdutoRepository.LinkConcorrenteProduto(CodigoProdutoConcorrente, produto);
@@ -61,7 +62,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                     await logConcorrenteProdutoRepository.Add(new LogConcorrenteProduto
                     {
                         CodigoProdutoConcorrente = concorrenteProduto,
-                        Concorrente = concorrenteProduto.Concorrente,                        
+                        Concorrente = concorrenteProduto.Concorrente,
                         CodigoProdutoAtual = produto,
                         DescricaoProdutoConcorrenteAnt = string.Empty,
                         DescricaoProdutoConcorrenteAtual = string.Empty,
@@ -77,34 +78,64 @@ namespace Estatistica.BusinessLogicLayer.Services
             List<int>? ids = null;
             if (!string.IsNullOrWhiteSpace(idConcorrente))
                 ids = idConcorrente.Split(",").Select(x => int.Parse(x)).ToList();
-            var concorrenteProdutos = await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTrackingSeaarch(x =>
+            var concorrenteProdutosQuery = await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTrackingSeaarchAsQueryable(x =>
                    (ids == null || ids.Count() == 0 ? true : ids.Contains(x.Concorrente.Id)) &&
                     (string.IsNullOrWhiteSpace(descricaoProduto) ? true : x.DescricaoProdutoConcorrente.Contains(descricaoProduto, StringComparison.OrdinalIgnoreCase)) &&
                     (string.IsNullOrWhiteSpace(fabricante) ? true : x.Produto != null && !string.IsNullOrWhiteSpace(x.Produto.Fabricante) && x.Produto.Fabricante.Contains(fabricante, StringComparison.OrdinalIgnoreCase))
                 );
+
+
+            var nfisQuery = await nfiRespository.GetNfisByConditionNoTrackingAsQueryable(x => true);
+
+            var ultimaDataPorProduto = nfisQuery
+                                .GroupBy(x => x.ConcorrenteProduto.Id)
+                                .Select(g => new
+                                {
+                                    ConcorrenteProdutoId = g.Key,
+                                    UltimaDataInclusao = g.Max(x => x.DataCadastro)
+                                });
+
+            var concorrenteProdutos = from cp in concorrenteProdutosQuery
+                                      join nfi in ultimaDataPorProduto
+                                          on cp.Id equals nfi.ConcorrenteProdutoId into nfiGroup
+                                      from nfi in nfiGroup.DefaultIfEmpty()
+                                      select new
+                                      {
+                                          ConcorrenteProduto = cp,
+                                          UltimaDataInclusao = nfi != null
+                                              ? nfi.UltimaDataInclusao
+                                              : (DateTime?)null
+                                      };
+
+
+            var result = await concorrenteProdutos.ToListAsync();
+
+
+            var productList = result.Select(x =>
+                            {
+                                var dto =
+                                    mapper.Map<ConcorrenteProdutoSearchDto>(
+                                        x.ConcorrenteProduto);
+
+                                if (x.UltimaDataInclusao.HasValue)
+                                {
+                                    dto.UltimaDataInclusao =
+                                        DateOnly.FromDateTime(
+                                            x.UltimaDataInclusao.Value);
+                                }
+
+                                return dto;
+                            }).ToList();
+
+
             var users = await usuarioRepository.GetUsersByCondition(x => true);
-            var productList = mapper.Map<IEnumerable<ConcorrenteProdutoSearchDto>>(concorrenteProdutos);
-
-
-            var nfis = (await nfiRespository.GetNfisByConditionNoTracking(x => productList.Select(x => x.Id)
-                                .Contains(x.ConcorrenteProduto.Id)))
-                                .Select(x => new { Id = x.Id, DataCadastro = x.DataCadastro })
-                                .OrderBy(x => x.Id)
-                                .ThenByDescending(x => x.DataCadastro);
-
-            foreach (var produto in productList)
-            {
-                var data = nfis.FirstOrDefault(x => x.Id == produto.Id)?.DataCadastro;
-                if(data.HasValue)
-                    produto.UltimaDataInclusao = DateOnly.FromDateTime(data.Value);
-            }                            
-
             var prodList = from p in productList
                            join u in users
                            on p.UsuarioCadastro equals u.Id into grp
                            from user in grp.DefaultIfEmpty()
                            select changeProductUser(user.UserName ?? "", p);
-            return productList;
+
+            return prodList;
         }
         public async Task<bool> UnLinkProduct(string CodigoProdutoConcorrente)
         {
@@ -117,7 +148,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                     await logConcorrenteProdutoRepository.Add(new LogConcorrenteProduto
                     {
                         CodigoProdutoConcorrente = concorrenteProduto,
-                        Concorrente = concorrenteProduto.Concorrente,                        
+                        Concorrente = concorrenteProduto.Concorrente,
                         CodigoProdutoAtual = null,
                         DescricaoProdutoConcorrenteAnt = string.Empty,
                         DescricaoProdutoConcorrenteAtual = string.Empty,

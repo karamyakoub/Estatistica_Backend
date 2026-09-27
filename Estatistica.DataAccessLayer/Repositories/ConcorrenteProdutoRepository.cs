@@ -77,7 +77,16 @@ namespace Estatistica.DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
-        
+        public Task<IQueryable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingSeaarchAsQueryable(Expression<Func<ConcorrenteProduto, bool>> expression)
+        {
+            return Task.FromResult(context.ConcorrenteProdutos
+                .AsNoTracking()
+                .Include(x => x.Concorrente)
+                .Include(x => x.Produto)
+                .Where(expression));
+        }
+
+
 
         public async Task<IEnumerable<ConcorrenteProduto>> GetConcorrenteProdutosByConditionNoTrackingWithoutConcorrente(Expression<Func<ConcorrenteProduto, bool>> expression)
         {
