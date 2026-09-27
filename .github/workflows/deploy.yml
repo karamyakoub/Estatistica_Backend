@@ -3,7 +3,6 @@ name: Estatistica - Build and Deploy
 on:
   push:
     branches:
-      - dev
       - master
 
 jobs:

@@ -130,12 +130,7 @@ namespace Estatistica.BusinessLogicLayer.Services
                             }).ToList();
 
 
-            //var users = await usuarioRepository.GetUsersByCondition(x => true);
-            //var prodList = from p in productList
-            //               join u in users
-            //               on p.UsuarioCadastro equals u.Id into grp
-            //               from user in grp.DefaultIfEmpty()
-            //               select changeProductUser(user.UserName ?? "", p);
+            
 
             return productList;
         }
