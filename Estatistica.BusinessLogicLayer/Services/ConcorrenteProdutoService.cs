@@ -76,8 +76,10 @@ namespace Estatistica.BusinessLogicLayer.Services
         public async Task<IEnumerable<ConcorrenteProdutoSearchDto>> SearchConcorrenteProdutos(string? idConcorrente, string descricaoProduto, string fabricante)
         {
             List<int>? ids = null;
+
             if (!string.IsNullOrWhiteSpace(idConcorrente))
                 ids = idConcorrente.Split(",").Select(x => int.Parse(x)).ToList();
+
             var concorrenteProdutosQuery = await concorrenteProdutoRepository.GetConcorrenteProdutosByConditionNoTrackingSeaarchAsQueryable(x =>
                    (ids == null || ids.Count() == 0 ? true : ids.Contains(x.Concorrente.Id)) &&
                     (string.IsNullOrWhiteSpace(descricaoProduto) ? true : x.DescricaoProdutoConcorrente.Contains(descricaoProduto, StringComparison.OrdinalIgnoreCase)) &&
