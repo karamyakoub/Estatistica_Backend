@@ -85,10 +85,16 @@ namespace Estatistica.BusinessLogicLayer.Services
             var users = await usuarioRepository.GetUsersByCondition(x => true);
             var productList = mapper.Map<IEnumerable<ConcorrenteProdutoSearchDto>>(concorrenteProdutos);
 
-            foreach(var produto in productList)
+
+            var nfis = (await nfiRespository.GetNfisByConditionNoTracking(x => productList.Select(x => x.Id)
+                                .Contains(x.ConcorrenteProduto.Id)))
+                                .Select(x => new { Id = x.Id, DataCadastro = x.DataCadastro })
+                                .OrderBy(x => x.Id)
+                                .ThenByDescending(x => x.DataCadastro);
+
+            foreach (var produto in productList)
             {
-                var data = (await nfiRespository.GetNfisByConditionNoTracking(x => x.ConcorrenteProduto.Id == produto.Id))
-                     .OrderByDescending(x => x.DataCadastro).FirstOrDefault()?.DataCadastro;
+                var data = nfis.FirstOrDefault(x => x.Id == produto.Id)?.DataCadastro;
                 if(data.HasValue)
                     produto.UltimaDataInclusao = DateOnly.FromDateTime(data.Value);
             }                            
