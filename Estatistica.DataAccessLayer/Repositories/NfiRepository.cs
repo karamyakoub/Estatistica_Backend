@@ -40,6 +40,11 @@ namespace Estatistica.DataAccessLayer.Repositories
                 .ToListAsync();
         }
 
+        public Task<IQueryable<Nfi>> GetNfisByConditionNoTrackingAsQueryable(Expression<Func<Nfi, bool>> condition)
+        {
+            return Task.FromResult(context.Nfis.Include(x => x.Nfc).AsNoTracking().Where(condition));
+        }
+
         public async Task<Nfi> UpdateNfi(Nfi nfi)
         {
             var nfiToUpdate = await context.Nfis.Include(x => x.Nfc).FirstOrDefaultAsync(x => x.Id == nfi.Id);
