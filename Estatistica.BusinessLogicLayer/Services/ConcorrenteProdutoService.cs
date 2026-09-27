@@ -90,7 +90,7 @@ namespace Estatistica.BusinessLogicLayer.Services
             var nfisQuery = await nfiRespository.GetNfisByConditionNoTrackingAsQueryable(x => true);
 
             var ultimaDataPorProduto = nfisQuery
-                                .GroupBy(x => EF.Property<string>(x, "ConcorrenteProdutoId"))
+                                .GroupBy(x => x.ConcorrenteProduto.Id)
                                 .Select(g => new
                                 {
                                     ConcorrenteProdutoId = g.Key,
@@ -105,11 +105,13 @@ namespace Estatistica.BusinessLogicLayer.Services
                                       {
                                           ConcorrenteProduto = cp,
                                           UltimaDataInclusao = nfi != null
-                                              ? nfi.UltimaDataInclusao
+                                              ? nfi.UltimaDataInclusao ?? cp.DataCadastro
                                               : (DateTime?)null
                                       };
 
+
             var result = await concorrenteProdutos.ToListAsync();
+
 
             var productList = result.Select(x =>
                             {
