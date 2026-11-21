@@ -20,6 +20,8 @@ namespace Estatistica.BusinessLogicLayer.DTO
         public string? ConcorrenteProdutoDescricao { get; set; }
         public string? ConcorrenteProdutoUnidade { get; set; }
         public decimal? Qtde { get; set; }
+        public string? UfOrigin { get; set; }
+        public string? UfDestino { get; set; }
         public decimal? ConcorrenteProdutoValorOriginal { get; set; }
         public decimal? ConcorrenteProdutoValorCorregido { get; set; }
         public decimal? ConcorrenteValorTotal { get; set; }        
