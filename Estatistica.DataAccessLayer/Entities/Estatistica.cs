@@ -43,5 +43,7 @@ namespace Estatistica.DataAccessLayer.Entities
         public decimal? PercFrete { get; set; }
         public decimal? PvendaComFrete { get; set; }
         public decimal? PvendaTotalComFrete { get; set; }
+        public string? UfOrigin { get; set; }
+        public string? UfDestino { get; set; }
     }
 }

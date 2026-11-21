@@ -12,6 +12,8 @@ select
      tbl.ConcorrenteProdutoCodigo,
      tbl.ConcorrenteProdutoDescricao,
      tbl.ConcorrenteProdutoUnidade,
+     tbl.ufOrigin,
+     tbl.ufDestino,
      tbl.Qtde,
      tbl.ConcorrenteProdutoValorOriginal,
      tbl.ConcorrenteProdutoValorCorregido,
@@ -56,6 +58,8 @@ from
                conprod.codProdCon ConcorrenteProdutoCodigo,
                conprod.descProdCon ConcorrenteProdutoDescricao,
                conprod.unProdCon ConcorrenteProdutoUnidade,
+               nfis.ufOrigin,
+               nfis.ufDestino,
                nfis.qtde Qtde,
                nfis.valor ConcorrenteProdutoValorOriginal,
                CASE
